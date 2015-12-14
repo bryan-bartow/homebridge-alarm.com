@@ -1,0 +1,83 @@
+var phantom = require('phantomjs');
+var Spooky = require('spooky');
+var Service, Characteristic;
+
+module.exports = function(homebridge) {
+  Service = homebridge.hap.Service;
+  Characteristic = homebridge.hap.Characteristic;
+  
+  homebridge.registerAccessory("homebridge-alarm.com", "Alarm.com", AlarmcomAccessory);
+}
+
+function AlarmcomAccessory(log, config) {
+  this.log = log;
+  this.name = config["name"];
+  this.username = config["username"];
+  this.password = config["password"];
+  
+  this.service = new Service.SecuritySystem(this.name);
+  
+  this.service
+    .getCharacteristic(Characteristic.SecuritySystemCurrentState)
+    .on('get', this.getState.bind(this));
+  
+  this.service
+    .getCharacteristic(Characteristic.SecuritySystemTargetState)
+    .on('get', this.getState.bind(this))
+    .on('set', this.setState.bind(this));
+}
+
+AlarmcomAccessory.prototype.getState = function(callback) {
+  this.log("Getting current state...");
+  
+  request.get({
+    url: "https://api.lockitron.com/v2/locks/"+this.lockID,
+    qs: { access_token: this.accessToken }
+  }, function(err, response, body) {
+    
+    if (!err && response.statusCode == 200) {
+      var json = JSON.parse(body);
+      var state = json.state; // "lock" or "unlock"
+      this.log("Lock state is %s", state);
+      var locked = state == "lock"
+      callback(null, locked); // success
+    }
+    else {
+      this.log("Error getting state (status code %s): %s", response.statusCode, err);
+      callback(err);
+    }
+  }.bind(this));
+}
+  
+AlarmcomAccessory.prototype.setState = function(state, callback) {
+  var lockitronState = (state == Characteristic.LockTargetState.SECURED) ? "lock" : "unlock";
+
+  this.log("Set state to %s", lockitronState);
+
+  request.put({
+    url: "https://api.lockitron.com/v2/locks/"+this.lockID,
+    qs: { access_token: this.accessToken, state: lockitronState }
+  }, function(err, response, body) {
+
+    if (!err && response.statusCode == 200) {
+      this.log("State change complete.");
+      
+      // we succeeded, so update the "current" state as well
+      var currentState = (state == Characteristic.LockTargetState.SECURED) ?
+        Characteristic.LockCurrentState.SECURED : Characteristic.LockCurrentState.UNSECURED;
+      
+      this.service
+        .setCharacteristic(Characteristic.LockCurrentState, currentState);
+      
+      callback(null); // success
+    }
+    else {
+      this.log("Error '%s' setting lock state. Response: %s", err, body);
+      callback(err || new Error("Error setting lock state."));
+    }
+  }.bind(this));
+}
+
+AlarmcomAccessory.prototype.getServices = function() {
+  return [this.service];
+}
