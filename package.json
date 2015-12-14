@@ -1,0 +1,23 @@
+{
+  "name": "homebridge-alarm.com",
+  "version": "0.0.1",
+  "description": "Alarm.com plugin for homebridge: https://github.com/nfarina/homebridge",
+  "license": "ISC",
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bryanbartow/homebridge-alarm.com.git"
+  },
+  "bugs": {
+    "url": "http://github.com/bryanbartow/homebridge-alarm.com/issues"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "phantomjs": "^1.9.19"
+  }
+}
