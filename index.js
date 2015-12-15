@@ -128,29 +128,6 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
   this.log("Set state to %s", alarmState);
 
-  /*request.put({
-    url: "https://api.lockitron.com/v2/locks/"+this.lockID,
-    qs: { access_token: this.accessToken, state: lockitronState }
-  }, function(err, response, body) {
-
-    if (!err && response.statusCode == 200) {
-      this.log("State change complete.");
-
-      // we succeeded, so update the "current" state as well
-      var currentState = (state == Characteristic.LockTargetState.SECURED) ?
-        Characteristic.LockCurrentState.SECURED : Characteristic.LockCurrentState.UNSECURED;
-
-      this.service
-        .setCharacteristic(Characteristic.LockCurrentState, currentState);
-
-      callback(null); // success
-    }
-    else {
-      this.log("Error '%s' setting lock state. Response: %s", err, body);
-      callback(err || new Error("Error setting lock state."));
-    }
-  }.bind(this));*/
-
   var spooky = new Spooky({
   child: {
     transport: 'http'
@@ -251,17 +228,6 @@ AlarmcomAccessory.prototype.getServices = function() {
 }
 
 // Helpers
-
-spooky.on('debug', function (log) {
-  console.log(log);
-});
-
-spooky.on('error', function (e, stack) {
-  console.error(e);
-  if (stack) {
-    console.log(stack);
-  }
-});
 
 function User() {
   return {
