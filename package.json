@@ -18,8 +18,8 @@
     "homebridge": ">=0.2.0"
   },
   "dependencies": {
-    "phantomjs": "^1.9.19"
-    "casperjs": "^1.1.0"
+    "phantomjs": "^1.9.19",
+    "casperjs": "^1.1.0",
     "spooky": "^0.2.5"
   }
 }
