@@ -9,7 +9,7 @@ module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
 
-  homebridge.registerAccessory("homebridge-alarm.com", "Alarm.com", AlarmcomAccessory);
+  homebridge.registerAccessory("homebridge-alarmdotcom", "Alarmdotcom", AlarmcomAccessory);
 }
 
 function AlarmcomAccessory(log, config) {
