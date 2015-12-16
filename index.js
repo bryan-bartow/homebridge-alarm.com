@@ -98,10 +98,10 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
       if(currentState >= 0) {
         //callback(null, currentState);
-        this.emit('doCallback', callback(null, currentState));
+        this.emit('doCallback', callback, null, currentState);
       } else {
         //callback({"errorMessage": "Alarm is in indeterminate state"})
-        this.emit('doCallback', callback({"errorMessage": "Alarm is in indeterminate state"}));
+        this.emit('doCallback', callback,{"errorMessage": "Alarm is in indeterminate state"}, null));
       }
     });
 
@@ -242,9 +242,9 @@ spooky.on('error', function (e, stack) {
   }
 });
 
-spooky.on('doCallback', function (callbackFunction) {
+spooky.on('doCallback', function (callbackFunction, error, state) {
   console.log('calling ' callbackFunction);
-  callbackFunction();
+  callbackFunction(error, state);
 });
 
 function User() {
