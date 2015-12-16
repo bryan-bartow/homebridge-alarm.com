@@ -157,7 +157,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
     spooky.then([
       {user:new User()},
       function () {
-       spooky.fill(
+       this.fill(
         '.login-form',
          {
           'ctl00$ContentPlaceHolder1$loginform$txtUserName': user.username,
@@ -171,27 +171,27 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
     spooky.then(function() {
 
-     spooky.click('.btn-sign-in')
-     spooky.waitWhileSelector('.btn-sign-in', function() {
+     this.click('.btn-sign-in')
+     this.waitWhileSelector('.btn-sign-in', function() {
      });
     });
 
     spooky.then(function() {
       if(state == Characteristic.SecuritySystemCurrentState.DISARMED) {
-        spooky.click('#ctl00_phBody_ArmingStateWidget_btnDisarm');
+        this.click('#ctl00_phBody_ArmingStateWidget_btnDisarm');
       }
       else if(state == Characteristic.SecuritySystemCurrentState.STAY_ARM) {
-        spooky.click('#ctl00_phBody_ArmingStateWidget_btnArmStay');
+        this.click('#ctl00_phBody_ArmingStateWidget_btnArmStay');
 
         spooky.waitForSelector('#ctl00_phBody_ArmingStateWidget_btnArmOptionStay', function() {
-          spooky.click('#ctl00_phBody_ArmingStateWidget_btnArmOptionStay')
+          this.click('#ctl00_phBody_ArmingStateWidget_btnArmOptionStay')
         });
       }
       else if(state == Characteristic.SecuritySystemCurrentState.AWAY_ARM) {
-        spooky.click('#ctl00_phBody_ArmingStateWidget_btnArmAway');
+        this.click('#ctl00_phBody_ArmingStateWidget_btnArmAway');
 
         spooky.waitForSelector('#ctl00_phBody_ArmingStateWidget_btnArmOptionAway', function() {
-          spooky.click('#ctl00_phBody_ArmingStateWidget_btnArmOptionAway')
+          this.click('#ctl00_phBody_ArmingStateWidget_btnArmOptionAway')
         });
       }
     });
