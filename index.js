@@ -55,14 +55,14 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
     // Load login page
     spooky.then(function () {
-      this.log(document.title)
+      this.emit('debug', 'loaded the login page')
     });
 
     // Fill in login form
     spooky.then([
       {user:new User()},
       function () {
-       spooky.fill(
+       this.fill(
         '.login-form',
          {
           'ctl00$ContentPlaceHolder1$loginform$txtUserName': user.username,
@@ -76,8 +76,8 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
     spooky.then(function() {
 
-     spooky.click('.btn-sign-in')
-     spooky.waitWhileSelector('.btn-sign-in', function() {
+     this.click('.btn-sign-in')
+     this.waitWhileSelector('.btn-sign-in', function() {
      });
     });
 
@@ -85,27 +85,29 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
       var currentState = -1;
 
-      if(spooky.exists('img[src="../webimages/widgets/disarmed_text.png?2"]')) {
-       this.log('unarmed');
+      if(this.exists('img[src="../webimages/widgets/disarmed_text.png?2"]')) {
+       this.emit('debug', 'unarmed');
        currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
-      } else if(spooky.exists('img[src="../webimages/widgets/armed_stay_text.png?2"]')) {
-       this.log('armed - stay');
+     } else if(this.exists('img[src="../webimages/widgets/armed_stay_text.png?2"]')) {
+       this.emit('debug', 'armed - stay');
        currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-      } else if(spooky.exists('img[src="../webimages/widgets/armed_away_text.png?2"]')) {
-       this.log('armed - away');
+     } else if(this.exists('img[src="../webimages/widgets/armed_away_text.png?2"]')) {
+       this.emit('debug', 'armed - away');
        currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
       }
 
       if(currentState >= 0) {
-        callback(null, currentState);
+        //callback(null, currentState);
+        this.emit('doCallback', callback(null, currentState));
       } else {
-        callback({"errorMessage": "Alarm is in indeterminate state"})
+        //callback({"errorMessage": "Alarm is in indeterminate state"})
+        this.emit('doCallback', callback({"errorMessage": "Alarm is in indeterminate state"}));
       }
     });
 
     spooky.run();
 
-  }.bind(this));
+  });
 }
 
 AlarmcomAccessory.prototype.setState = function(state, callback) {
@@ -228,6 +230,22 @@ AlarmcomAccessory.prototype.getServices = function() {
 }
 
 // Helpers
+
+spooky.on('debug', function (log) {
+  console.log(log);
+});
+
+spooky.on('error', function (e, stack) {
+  console.error(e);
+  if (stack) {
+    console.log(stack);
+  }
+});
+
+spooky.on('doCallback', function (callbackFunction) {
+  console.log('calling ' callbackFunction);
+  callbackFunction();
+});
 
 function User() {
   return {
