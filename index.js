@@ -231,18 +231,18 @@ AlarmcomAccessory.prototype.getServices = function() {
 
 // Helpers
 
-spooky.on('debug', function (log) {
+Spooky.on('debug', function (log) {
   console.log(log);
 });
 
-spooky.on('error', function (e, stack) {
+Spooky.on('error', function (e, stack) {
   console.error(e);
   if (stack) {
     console.log(stack);
   }
 });
 
-spooky.on('doCallback', function (callbackFunction, error, state) {
+Spooky.on('doCallback', function (callbackFunction, error, state) {
   console.log('calling ' + callbackFunction);
   callbackFunction(error, state);
 });
