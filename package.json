@@ -14,12 +14,13 @@
     "url": "http://github.com/bryanbartow/homebridge-alarm.com/issues"
   },
   "engines": {
-    "node": ">=0.12.0",
+    "node": ">=4.2.3",
     "homebridge": ">=0.2.0"
   },
   "dependencies": {
     "phantomjs": "^1.9.19",
-    "casperjs": "^1.1.0-beta3",
-    "spooky": "^0.2.5"
+    "g": "^2.0.0",
+    "http-server": "^0.8.5",
+    "selenium-webdriver": "2.47.0"
   }
 }

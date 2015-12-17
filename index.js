@@ -1,5 +1,7 @@
-var phantom = require('phantomjs');
-var Spooky = require('spooky');
+var webdriver = require('selenium-webdriver');
+var By = require('selenium-webdriver').By;
+var until = require('selenium-webdriver').until;
+var phantomjs = require('selenium-webdriver/phantomjs');
 var Service, Characteristic;
 
 var url = "https://www.alarm.com/login.aspx"
@@ -33,197 +35,182 @@ function AlarmcomAccessory(log, config) {
 
 AlarmcomAccessory.prototype.getState = function(callback) {
 
-  this.log("Getting current state...");
+  var statusResult = new Object();
 
-  var spooky = new Spooky({
-  child: {
-    transport: 'http'
-  },
-  casper: {
-    logLevel: 'debug',
-    verbose: true
-  }
-  }, function (err) {
+	try {
 
-    if (err) {
-      e = new Error('Failed to load spooky');
-      e.details = err;
-      throw e;
-    }
+    var driver = new phantomjs.Driver();
 
-    spooky.start(url);
+		driver.get('https://www.alarm.com/login?m=no_session&ReturnUrl=/web/Security/SystemSummary.aspx');
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(username);
+		driver.findElement(By.name('txtPassword')).sendKeys(password);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
 
-    // Load login page
-    spooky.then(function () {
-      this.emit('debug', 'loaded the login page')
-    });
+		console.log('Logged in');
 
-    // Fill in login form
-    spooky.then([
-      {user:new User()},
-      function () {
-       this.fill(
-        '.login-form',
-         {
-          'ctl00$ContentPlaceHolder1$loginform$txtUserName': user.username,
-          'txtPassword': user.password
-         },
-         // if true submit the form
-        true
-        );
-      }
-    ])
+    return driver.getTitle().then(function(title) {
+      console.log('got the title::' + title);
+      driver.findElement(By.id('ctl00_phBody_ArmingStateWidget_imgState')).then(function(statusElement) {
+        console.log('go the status widget');
+        statusElement.getAttribute('src').then(function(srcName) {
+          console.log('got the status widget image source');
+          if(srcName === "https://www.alarm.com/web/webimages/widgets/disarmed_text.png?2") {
+            statusResult.message = "disarmed";
+            statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
+          } else if(srcName === "https://www.alarm.com/web/webimages/widgets/armed_stay_text.png?2") {
+            statusResult.message = "stay_armed";
+            statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+          } else if(srcName === "https://www.alarm.com/web/webimages/widgets/armed_away_text.png?2") {
+            statusResult.message = "away_armed";
+            statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+          }
 
-    spooky.then(function() {
+          driver.quit();
 
-     this.click('.btn-sign-in')
-     this.waitWhileSelector('.btn-sign-in', function() {
-     });
-    });
+          statusResult.success = true;
+        });
 
-    spooky.then(function() {
+      }, function(error) {
 
-      var currentState = -1;
+        console.log("Can't find state element");
 
-      if(this.exists('img[src="../webimages/widgets/disarmed_text.png?2"]')) {
-       this.emit('debug', 'unarmed');
-       currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
-     } else if(this.exists('img[src="../webimages/widgets/armed_stay_text.png?2"]')) {
-       this.emit('debug', 'armed - stay');
-       currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-     } else if(this.exists('img[src="../webimages/widgets/armed_away_text.png?2"]')) {
-       this.emit('debug', 'armed - away');
-       currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-      }
+        statusResult.message = "Can't find the state element";
+        statusResult.success = false;
 
-      if(currentState >= 0) {
-        //callback(null, currentState);
-        this.emit('doCallback', callback, null, currentState);
-      } else {
-        //callback({"errorMessage": "Alarm is in indeterminate state"})
-        this.emit('doCallback', callback,{"errorMessage": "Alarm is in indeterminate state"}, null);
-      }
-    });
+        driver.quit();
+      });
 
-    spooky.run();
+      return statusResult;
 
-  });
+		}, 1000).then(function(result) {
+
+      console.log(result);
+
+			callback(null, result.status);
+		});
+	}
+	catch(exception) {
+
+    statusResult.message = exception.message;
+    statusResult.success = false;
+
+		console.log(statusResult);
+
+		callback(statusResult);
+	}
 }
 
 AlarmcomAccessory.prototype.setState = function(state, callback) {
 
-  var alarmState;
+  var statusResult = new Object();
 
-  switch (state) {
-    case Characteristic.SecuritySystemTargetState.DISARMED:
-      alarmState = "disarmed";
-      break;
+	try {
 
-    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-      alarmState = "armed - away";
-      break;
+		var driver = new phantomjs.Driver();
 
-    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-      alarmState = "armed - stay";
-      break;
-  }
+		driver.get('https://www.alarm.com/login?m=no_session&ReturnUrl=/web/Security/SystemSummary.aspx');
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(username);
+		driver.findElement(By.name('txtPassword')).sendKeys(password);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
 
-  this.log("Set state to %s", alarmState);
+		console.log('Logged in');
 
-  var spooky = new Spooky({
-  child: {
-    transport: 'http'
-  },
-  casper: {
-    logLevel: 'debug',
-    verbose: true
-  }
-  }, function (err) {
+    return driver.getTitle().then(function(title) {
 
-    if (err) {
-      e = new Error('Failed to load spooky');
-      e.details = err;
-      throw e;
-    }
+      // Determine the element to click based on state
 
-    spooky.start(url);
+      var setStateElementId;
+      var confirmStateElemendId = null;
 
-    // Load login page
-    spooky.then(function () {
-      this.log(document.title)
-    });
+      if(state === Characteristic.SecuritySystemTargetState.DISARMED) {
 
-    // Fill in login form
-    spooky.then([
-      {user:new User()},
-      function () {
-       this.fill(
-        '.login-form',
-         {
-          'ctl00$ContentPlaceHolder1$loginform$txtUserName': user.username,
-          'txtPassword': user.password
-         },
-         // if true submit the form
-        true
-        );
+        setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnDisarm';
       }
-    ])
+      else if(state === Characteristic.SecuritySystemTargetState.STAY_ARM) {
 
-    spooky.then(function() {
-
-     this.click('.btn-sign-in')
-     this.waitWhileSelector('.btn-sign-in', function() {
-     });
-    });
-
-    spooky.then(function() {
-      if(state == Characteristic.SecuritySystemCurrentState.DISARMED) {
-        this.click('#ctl00_phBody_ArmingStateWidget_btnDisarm');
+        setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnArmStay';
+        confirmStateElemendId = 'ctl00_phBody_ArmingStateWidget_btnArmOptionStay'
       }
-      else if(state == Characteristic.SecuritySystemCurrentState.STAY_ARM) {
-        this.click('#ctl00_phBody_ArmingStateWidget_btnArmStay');
+      else if(state === Characteristic.SecuritySystemTargetState.AWAY_ARM) {
 
-        spooky.waitForSelector('#ctl00_phBody_ArmingStateWidget_btnArmOptionStay', function() {
-          this.click('#ctl00_phBody_ArmingStateWidget_btnArmOptionStay')
+        setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnArmAway';
+        confirmStateElemendId = 'ctl00_phBody_ArmingStateWidget_btnArmOptionAway'
+      }
+
+      driver.findElement(By.id(setStateElementId)).then(function(statusElement) {
+
+        statusElement.click().then(function(clickedStatusElement) {
+
+          if(state === Characteristic.SecuritySystemTargetState.DISARMED) {
+
+            statusResult.message = "state set to disarmed";
+            statusResult.success = true;
+            statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED
+
+            driver.quit();
+
+            return statusResult;
+          } else if(state !== Characteristic.SecuritySystemTargetState.DISARMED && confirmStateElemendId !== null) {
+
+            driver.wait(until.elementLocated(By.id(confirmStateElemendId)), 5000).then(function(confirmElement) {
+
+              confirmElement.click().then(function(clickedConfirmElement) {
+
+                statusResult.message = "state set to " + state;
+                statusResult.success = true;
+                statusResult.status =
+                  (state === Characteristic.SecuritySystemTargetState.STAY_ARM ?
+                    Characteristic.SecuritySystemCurrentState.STAY_ARM :
+                    Characteristic.SecuritySystemCurrentState.AWAY_ARM);
+
+                driver.quit();
+
+                return statusResult;
+              });
+            }, function(error) {
+
+              console.log("Can't find confirm state element");
+
+              statusResult.message = "Can't find the confirm state element";
+              statusResult.success = false;
+
+              driver.quit();
+            });
+          }
         });
-      }
-      else if(state == Characteristic.SecuritySystemCurrentState.AWAY_ARM) {
-        this.click('#ctl00_phBody_ArmingStateWidget_btnArmAway');
 
-        spooky.waitForSelector('#ctl00_phBody_ArmingStateWidget_btnArmOptionAway', function() {
-          this.click('#ctl00_phBody_ArmingStateWidget_btnArmOptionAway')
-        });
-      }
-    });
+      }, function(error) {
 
-    spooky.then(function() {
-      var currentState
+        console.log("Can't find state element");
 
-      switch (state) {
-        case Characteristic.SecuritySystemTargetState.DISARMED:
-          currentState = Characteristic.SecuritySystemCurrentState.DISARMED
-          break;
+        statusResult.message = "Can't find the state element";
+        statusResult.success = false;
 
-        case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-          currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM
-          break;
+        driver.quit();
+      });
 
-        case Characteristic.SecuritySystemTargetState.STAY_ARM:
-          currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM
-          break;
-      }
+      return statusResult;
+
+		}, 1000).then(function(result) {
+
+      console.log(result);
 
       this.service
         .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
 
-      callback(null); // success
-    });
+			callback(null);
+		});
+	}
+	catch(exception) {
 
-    spooky.run();
+    statusResult.message = exception.message;
+    statusResult.success = false;
 
-  }.bind(this));
+		console.log(statusResult);
 
-}
+		callback(statusResult);
+	}
+}.bind(this));
 
 AlarmcomAccessory.prototype.getServices = function() {
   return [this.service];
