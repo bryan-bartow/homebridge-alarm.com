@@ -42,8 +42,8 @@ AlarmcomAccessory.prototype.getState = function(callback) {
     var driver = new phantomjs.Driver();
 
 		driver.get('https://www.alarm.com/login?m=no_session&ReturnUrl=/web/Security/SystemSummary.aspx');
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(username);
-		driver.findElement(By.name('txtPassword')).sendKeys(password);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(this.username);
+		driver.findElement(By.name('txtPassword')).sendKeys(this.password);
 		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
 
 		console.log('Logged in');
@@ -109,8 +109,8 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 		var driver = new phantomjs.Driver();
 
 		driver.get('https://www.alarm.com/login?m=no_session&ReturnUrl=/web/Security/SystemSummary.aspx');
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(username);
-		driver.findElement(By.name('txtPassword')).sendKeys(password);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(this.username);
+		driver.findElement(By.name('txtPassword')).sendKeys(this.password);
 		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
 
 		console.log('Logged in');
