@@ -196,7 +196,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       console.log(result);
 
       this.service
-        .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
+        .setCharacteristic(Characteristic.SecuritySystemCurrentState, result.status);
 
 			callback(null);
 		}.bind(this));
