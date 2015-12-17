@@ -218,6 +218,7 @@ AlarmcomAccessory.prototype.getServices = function() {
 
 // Helpers
 
+/*
 Spooky.on('debug', function (log) {
   console.log(log);
 });
@@ -233,6 +234,7 @@ Spooky.on('doCallback', function (callbackFunction, error, state) {
   console.log('calling ' + callbackFunction);
   callbackFunction(error, state);
 });
+*/
 
 function User() {
   return {
