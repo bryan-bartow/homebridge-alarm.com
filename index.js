@@ -140,7 +140,8 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       driver.findElement(By.id(setStateElementId)).then(function(statusElement) {
 
         statusElement.click().then(function(clickedStatusElement) {
-
+          console.log("state::" + state);
+          console.log(Characteristic.SecuritySystemTargetState.DISARMED);
           if(state === Characteristic.SecuritySystemTargetState.DISARMED) {
 
             statusResult.message = "state set to disarmed";
@@ -152,7 +153,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
             return statusResult;
           } else if(state !== Characteristic.SecuritySystemTargetState.DISARMED && confirmStateElemendId !== null) {
 
-            driver.wait(until.elementLocated(By.id(confirmStateElemendId)), 5000).then(function(confirmElement) {
+            driver.wait(until.elementLocated(By.id(confirmStateElemendId)), 1000).then(function(confirmElement) {
 
               confirmElement.click().then(function(clickedConfirmElement) {
 
