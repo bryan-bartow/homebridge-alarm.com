@@ -113,9 +113,11 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 		driver.findElement(By.name('txtPassword')).sendKeys(this.password);
 		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
 
-		console.log('Logged in');
-
     return driver.getTitle().then(function(title) {
+
+      console.log('Logged in to alarm.com');
+      console.log("attempting to set state::" + state);
+      console.log(Characteristic.SecuritySystemTargetState.DISARMED);
 
       // Determine the element to click based on state
 
