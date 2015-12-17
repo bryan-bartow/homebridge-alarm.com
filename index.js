@@ -46,7 +46,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 		driver.findElement(By.name('txtPassword')).sendKeys(this.password);
 		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
 
-		console.log('Logged in to alarm.com');
+		this.log('Logged in to alarm.com');
 
     return driver.getTitle().then(function(title) {
 
@@ -72,7 +72,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
       }, function(error) {
 
-        console.log("Can't find state element");
+        this.log("Can't find state element");
 
         statusResult.message = "Can't find the state element";
         statusResult.success = false;
@@ -84,10 +84,10 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
 		}, 1000).then(function(result) {
 
-      console.log(result);
+      this.log(result);
 
 			callback(null, result.status);
-		});
+		}.bind(this));
 	}
 	catch(exception) {
 
@@ -115,9 +115,8 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
     return driver.getTitle().then(function(title) {
 
-      console.log('Logged in to alarm.com');
-      console.log("attempting to set state::" + state);
-      console.log(Characteristic.SecuritySystemTargetState.DISARM);
+      this.log('Logged in to alarm.com');
+      this.log("attempting to set state::" + state);
 
       // Determine the element to click based on state
 
@@ -142,8 +141,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       driver.findElement(By.id(setStateElementId)).then(function(statusElement) {
 
         statusElement.click().then(function(clickedStatusElement) {
-          console.log("state::" + state);
-          console.log(Characteristic.SecuritySystemTargetState.DISARM);
+
           if(state === Characteristic.SecuritySystemTargetState.DISARM) {
 
             statusResult.message = "state set to disarmed";
@@ -172,7 +170,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
               });
             }, function(error) {
 
-              console.log("Can't find confirm state element");
+              this.log("Can't find confirm state element");
 
               statusResult.message = "Can't find the confirm state element";
               statusResult.success = false;
@@ -184,7 +182,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
       }, function(error) {
 
-        console.log("Can't find state element");
+        this.log("Can't find state element");
 
         statusResult.message = "Can't find the state element";
         statusResult.success = false;
@@ -196,7 +194,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
 		}, 1000).then(function(result) {
 
-      console.log(result);
+      this.log(result);
 
       this.service
         .setCharacteristic(Characteristic.SecuritySystemCurrentState, result.status);
