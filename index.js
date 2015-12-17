@@ -117,14 +117,14 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
       console.log('Logged in to alarm.com');
       console.log("attempting to set state::" + state);
-      console.log(Characteristic.SecuritySystemTargetState.DISARMED);
+      console.log(Characteristic.SecuritySystemTargetState.DISARM);
 
       // Determine the element to click based on state
 
       var setStateElementId;
       var confirmStateElemendId = null;
 
-      if(state === Characteristic.SecuritySystemTargetState.DISARMED) {
+      if(state === Characteristic.SecuritySystemTargetState.DISARM) {
 
         setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnDisarm';
       }
@@ -143,8 +143,8 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
         statusElement.click().then(function(clickedStatusElement) {
           console.log("state::" + state);
-          console.log(Characteristic.SecuritySystemTargetState.DISARMED);
-          if(state === Characteristic.SecuritySystemTargetState.DISARMED) {
+          console.log(Characteristic.SecuritySystemTargetState.DISARM);
+          if(state === Characteristic.SecuritySystemTargetState.DISARM) {
 
             statusResult.message = "state set to disarmed";
             statusResult.success = true;
@@ -153,7 +153,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
             driver.quit();
 
             return statusResult;
-          } else if(state !== Characteristic.SecuritySystemTargetState.DISARMED && confirmStateElemendId !== null) {
+          } else if(state !== Characteristic.SecuritySystemTargetState.DISARM && confirmStateElemendId !== null) {
 
             driver.wait(until.elementLocated(By.id(confirmStateElemendId)), 1000).then(function(confirmElement) {
 
