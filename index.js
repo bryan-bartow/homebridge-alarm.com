@@ -210,7 +210,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
 		callback(statusResult);
 	}
-}.bind(this));
+}
 
 AlarmcomAccessory.prototype.getServices = function() {
   return [this.service];
