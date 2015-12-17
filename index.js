@@ -46,14 +46,14 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 		driver.findElement(By.name('txtPassword')).sendKeys(this.password);
 		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
 
-		console.log('Logged in');
+		console.log('Logged in to alarm.com');
 
     return driver.getTitle().then(function(title) {
-      console.log('got the title::' + title);
+
       driver.findElement(By.id('ctl00_phBody_ArmingStateWidget_imgState')).then(function(statusElement) {
-        console.log('go the status widget');
+
         statusElement.getAttribute('src').then(function(srcName) {
-          console.log('got the status widget image source');
+
           if(srcName === "https://www.alarm.com/web/webimages/widgets/disarmed_text.png?2") {
             statusResult.message = "disarmed";
             statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -199,7 +199,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
         .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
 
 			callback(null);
-		});
+		}.bind(this));
 	}
 	catch(exception) {
 
