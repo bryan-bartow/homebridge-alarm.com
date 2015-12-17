@@ -87,7 +87,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
       this.log(result);
 
 			callback(null, result.status);
-		}.bind(this));
+		});
 	}
 	catch(exception) {
 
@@ -115,8 +115,8 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
     return driver.getTitle().then(function(title) {
 
-      this.log('Logged in to alarm.com');
-      this.log("attempting to set state::" + state);
+      console.log('Logged in to alarm.com');
+      console.log("attempting to set state::" + state);
 
       // Determine the element to click based on state
 
@@ -170,7 +170,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
               });
             }, function(error) {
 
-              this.log("Can't find confirm state element");
+              console.log("Can't find confirm state element");
 
               statusResult.message = "Can't find the confirm state element";
               statusResult.success = false;
@@ -182,7 +182,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
       }, function(error) {
 
-        this.log("Can't find state element");
+        console.log("Can't find state element");
 
         statusResult.message = "Can't find the state element";
         statusResult.success = false;
@@ -218,24 +218,6 @@ AlarmcomAccessory.prototype.getServices = function() {
 }
 
 // Helpers
-
-/*
-Spooky.on('debug', function (log) {
-  console.log(log);
-});
-
-Spooky.on('error', function (e, stack) {
-  console.error(e);
-  if (stack) {
-    console.log(stack);
-  }
-});
-
-Spooky.on('doCallback', function (callbackFunction, error, state) {
-  console.log('calling ' + callbackFunction);
-  callbackFunction(error, state);
-});
-*/
 
 function User() {
   return {
