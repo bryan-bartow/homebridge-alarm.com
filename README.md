@@ -3,7 +3,7 @@ Alarm.com plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
 # Installation
 1. Install homebridge using: npm install -g homebridge
-2. Install this plugin using: npm install -g homebridge-alarm.com
+2. Install this plugin using: npm install -g homebridge-alarmdotcom
 3. Install PhantomJS using: npm install -g phantomjs
 4. Update your configuration file. See sample-config.json snippet below. 
 
@@ -27,7 +27,7 @@ Configuration sample:
 
 Fields: 
 
-* "accessory": Must always be "Alarm.com" (required)
+* "accessory": Must always be "Alarmdotcom" (required)
 * "name": Can be anything (required)
 * "username": Alarm.com login username, same as app (required)
 * "password": Alarm.com login password, same as app (required)
