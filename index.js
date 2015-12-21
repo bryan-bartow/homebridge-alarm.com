@@ -84,7 +84,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
 		}, 1000).then(function(result) {
 
-      this.log(result);
+      console.log(result);
 
 			callback(null, result.status);
 		});
