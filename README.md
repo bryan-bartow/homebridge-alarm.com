@@ -32,3 +32,16 @@ Fields:
 * "username": Alarm.com login username, same as app (required)
 * "password": Alarm.com login password, same as app (required)
 
+# Alarm.com Nag Screens
+
+Occassionally, after logging into alarm.com, users will be shown a variety of screens asking them to confirm email addresses, etc. before they are shown their system status screen. The plugin depends on the status screen being shown immediately after login. If you see the following message in your console:
+
+```
+Logged in to alarm.com
+
+/usr/local/lib/node_modules/homebridge-alarmdotcom/node_modules/selenium-webdriver/lib/goog/async/nexttick.js:41
+
+goog.global.setTimeout(function() { throw exception; }, 0);
+```
+
+Try manually logging into alarm.com on your browser and dismiss / handle any tasks you're presented before the status page. The plugin will most likely work once this is finished.
