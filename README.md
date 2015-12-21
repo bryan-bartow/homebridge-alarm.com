@@ -15,7 +15,7 @@ Configuration sample:
 {
   "accessories": [
     {
-        "accessory": "Alarm.com",
+        "accessory": "Alarmdotcom",
         "name": "Security Panel",
         "username": "test@example.com",
         "password": "testpassword"
