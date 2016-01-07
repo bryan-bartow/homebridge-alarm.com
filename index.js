@@ -153,7 +153,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
             return statusResult;
           } else if(state !== Characteristic.SecuritySystemTargetState.DISARM && confirmStateElemendId !== null) {
 
-            driver.wait(until.elementLocated(By.id(confirmStateElemendId)), 1000).then(function(confirmElement) {
+            driver.wait(until.elementLocated(By.id(confirmStateElemendId)), 5000).then(function(confirmElement) {
 
               confirmElement.click().then(function(clickedConfirmElement) {
 
