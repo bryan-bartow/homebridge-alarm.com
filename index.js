@@ -133,7 +133,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       }
       else if(state === Characteristic.SecuritySystemTargetState.AWAY_ARM) {
 
-        setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnArmAway';
+        setStateElementId = 'ctl00_phBody_butArmAway';
       }
 
       driver.findElement(By.id(setStateElementId)).then(function(statusElement) {
@@ -142,7 +142,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
             statusResult.message = "state set to  " + state;
             statusResult.success = true;
-            
+
 			if(state === Characteristic.SecuritySystemTargetState.DISARMED) {
 				statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
 			} else if(state === Characteristic.SecuritySystemTargetState.STAY_ARM) {
