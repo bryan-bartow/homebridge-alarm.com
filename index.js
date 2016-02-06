@@ -41,26 +41,26 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
     var driver = new phantomjs.Driver();
 
-		driver.get('https://www.alarm.com/login?m=no_session&ReturnUrl=/web/Security/SystemSummary.aspx');
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(this.username);
-		driver.findElement(By.name('txtPassword')).sendKeys(this.password);
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
+		driver.get('https://www.alarm.com/pda/Default.aspx');
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$txtLogin')).sendKeys(this.username);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$txtPassword')).sendKeys(this.password);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$btnLogin')).click();
 
 		this.log('Logged in to alarm.com');
 
     return driver.getTitle().then(function(title) {
 
-      driver.findElement(By.id('ctl00_phBody_ArmingStateWidget_imgState')).then(function(statusElement) {
+      driver.findElement(By.id('ctl00_phBody_lblArmingState')).then(function(statusElement) {
 
-        statusElement.getAttribute('src').then(function(srcName) {
+        statusElement.getText().then(function(stateLabel) {
 
-          if(srcName === "https://www.alarm.com/web/webimages/widgets/disarmed_text.png?2") {
+          if(stateLabel === "Disarmed") {
             statusResult.message = "disarmed";
             statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
-          } else if(srcName === "https://www.alarm.com/web/webimages/widgets/armed_stay_text.png?2") {
+          } else if(stateLabel === "Armed Stay") {
             statusResult.message = "stay_armed";
             statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-          } else if(srcName === "https://www.alarm.com/web/webimages/widgets/armed_away_text.png?2") {
+          } else if(stateLabel === "Armed Away") {
             statusResult.message = "away_armed";
             statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
           }
@@ -108,10 +108,10 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
 		var driver = new phantomjs.Driver();
 
-		driver.get('https://www.alarm.com/login?m=no_session&ReturnUrl=/web/Security/SystemSummary.aspx');
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$txtUserName')).sendKeys(this.username);
-		driver.findElement(By.name('txtPassword')).sendKeys(this.password);
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$loginform$signInButton')).click();
+		driver.get('https://www.alarm.com/pda/Default.aspx');
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$txtLogin')).sendKeys(this.username);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$txtPassword')).sendKeys(this.password);
+		driver.findElement(By.name('ctl00$ContentPlaceHolder1$btnLogin')).click();
 
     return driver.getTitle().then(function(title) {
 
@@ -125,59 +125,35 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
       if(state === Characteristic.SecuritySystemTargetState.DISARM) {
 
-        setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnDisarm';
+        setStateElementId = 'ctl00_phBody_butDisarm';
       }
       else if(state === Characteristic.SecuritySystemTargetState.STAY_ARM) {
 
-        setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnArmStay';
-        confirmStateElemendId = 'ctl00_phBody_ArmingStateWidget_btnArmOptionStay'
+        setStateElementId = 'ctl00_phBody_butArmStay';
       }
       else if(state === Characteristic.SecuritySystemTargetState.AWAY_ARM) {
 
         setStateElementId = 'ctl00_phBody_ArmingStateWidget_btnArmAway';
-        confirmStateElemendId = 'ctl00_phBody_ArmingStateWidget_btnArmOptionAway'
       }
 
       driver.findElement(By.id(setStateElementId)).then(function(statusElement) {
 
         statusElement.click().then(function(clickedStatusElement) {
 
-          if(state === Characteristic.SecuritySystemTargetState.DISARM) {
-
-            statusResult.message = "state set to disarmed";
+            statusResult.message = "state set to  " + state;
             statusResult.success = true;
-            statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED
+            
+			if(state === Characteristic.SecuritySystemTargetState.DISARMED) {
+				statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
+			} else if(state === Characteristic.SecuritySystemTargetState.STAY_ARM) {
+				statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+			} else {
+				statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+			}
 
             driver.quit();
 
             return statusResult;
-          } else if(state !== Characteristic.SecuritySystemTargetState.DISARM && confirmStateElemendId !== null) {
-
-            driver.wait(until.elementLocated(By.id(confirmStateElemendId)), 5000).then(function(confirmElement) {
-
-              confirmElement.click().then(function(clickedConfirmElement) {
-
-                statusResult.message = "state set to " + state;
-                statusResult.success = true;
-                statusResult.status =
-                  (state === Characteristic.SecuritySystemTargetState.STAY_ARM ?
-                    Characteristic.SecuritySystemCurrentState.STAY_ARM :
-                    Characteristic.SecuritySystemCurrentState.AWAY_ARM);
-
-                driver.quit();
-
-                return statusResult;
-              });
-            }, function(error) {
-
-              console.log("Can't find confirm state element");
-
-              statusResult.message = "Can't find the confirm state element";
-              statusResult.success = false;
-
-              driver.quit();
-            });
-          }
         });
 
       }, function(error) {
