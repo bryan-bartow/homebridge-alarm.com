@@ -55,9 +55,9 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
 
   this.log('logging in');
-  if(stateToSet) {
+  //if(stateToSet) {
     this.log('and setting state to ' + stateToSet);
-  }
+  //}
 
   request.get({
     url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/login/0.0.2",
@@ -114,6 +114,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       var json = JSON.parse(body);
       this.sessionUrl = json.data.sessionUrl;
 
+      this.log("going to login and set state to " + state);
       this.login(state, callback);
     }
     else {
