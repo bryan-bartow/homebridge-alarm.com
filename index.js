@@ -1,6 +1,14 @@
 var request = require("request");
 var Service, Characteristic;
 
+var alarm_status_map = [
+    'Armed Stay',
+    'Armed Away',
+    'Armed Night',
+    'Disarmed',
+    'Alarm Triggered'
+];
+
 module.exports = function (homebridge) {
 
   Service = homebridge.hap.Service;
@@ -55,9 +63,6 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
 
   this.log('logging in');
-  //if(stateToSet) {
-    this.log('and setting state to ' + stateToSet);
-  //}
 
   request.get({
     url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/login/0.0.2",
@@ -114,7 +119,6 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       var json = JSON.parse(body);
       this.sessionUrl = json.data.sessionUrl;
 
-      this.log("going to login and set state to " + state);
       this.login(state, callback);
     }
     else {
@@ -126,7 +130,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
 
 AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
 
-  this.log('setting state to ' + state);
+  this.log('setting state to ' + alarm_status_map[state]);
 
   var apiVerb = "";
 
@@ -171,7 +175,7 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
 
       statusResult.success = true;
 
-      this.log(statusResult);
+      this.log("alarm set to " + alarmState);
 
       this.service
         .setCharacteristic(Characteristic.SecuritySystemCurrentState, statusResult.status);
