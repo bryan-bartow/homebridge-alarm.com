@@ -37,7 +37,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 
   request.get({
     url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/initlogin/0.0.2",
-    qs: { wrapAPIKey: apiKey }
+    qs: { wrapAPIKey: this.apiKey }
   }, function(err, response, body) {
 
     if (!err && response.statusCode == 200) {
