@@ -118,7 +118,7 @@ AlarmcomAccessory.prototype.login = function(callback) {
       this.log("Error getting state (status code %s): %s", response.statusCode, err);
       callback(err);
     }
-  });
+  }.bind(this));
 }
 
 AlarmcomAccessory.prototype.setState = function(state, callback) {
