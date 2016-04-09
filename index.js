@@ -88,7 +88,7 @@ AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
 
       statusResult.success = true;
 
-      if(stateToSet) {
+      if(stateToSet !== null) {
         this.setAlarmState(stateToSet, callback);
       } else {
         callback(null, statusResult.status);
