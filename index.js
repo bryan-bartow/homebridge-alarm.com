@@ -24,6 +24,7 @@ function AlarmcomAccessory(log, config) {
   this.username = config["username"];
   this.password = config["password"];
   this.apiKey = config["apiKey"];
+  this.apiUsername = config["apiUsername"];
   this.sessionUrl = "";
 
   this.service = new Service.SecuritySystem(this.name);
@@ -43,7 +44,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
   this.log('getting sessionUrl');
 
   request.get({
-    url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/initlogin/0.0.2",
+    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/initlogin/0.0.2",
     qs: { wrapAPIKey: this.apiKey }
   }, function(err, response, body) {
 
@@ -65,7 +66,7 @@ AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
   this.log('logging in');
 
   request.get({
-    url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/login/0.0.2",
+    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/login/0.0.2",
     qs: {
       wrapAPIKey: this.apiKey,
       sessionUrl: this.sessionUrl,
@@ -111,7 +112,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
   this.log('getting sessionUrl');
 
   request.get({
-    url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/initlogin/0.0.2",
+    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/initlogin/0.0.2",
     qs: { wrapAPIKey: this.apiKey }
   }, function(err, response, body) {
 
@@ -146,7 +147,7 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
   }
 
   request.get({
-    url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/" + apiVerb + "/0.0.2",
+    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/" + apiVerb + "/0.0.2",
     qs: {
       wrapAPIKey: this.apiKey,
       sessionUrl: this.sessionUrl,
@@ -183,13 +184,4 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
 
 AlarmcomAccessory.prototype.getServices = function() {
   return [this.service];
-}
-
-// Helpers
-
-function User() {
-  return {
-    username: config["username"],
-    password: config["password"]
-  }
 }
