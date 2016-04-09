@@ -12,7 +12,7 @@ var alarm_status_map = [
 module.exports = function (homebridge) {
 
   Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic;
+  Characteristic = homebridge.hap.Characteristic.SecuritySystemAlarmType;
 
   homebridge.registerAccessory("homebridge-alarmdotcom", "Alarmdotcom", AlarmcomAccessory);
 }
@@ -156,23 +156,18 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
   }, function(err, response, body) {
 
     if (!err && response.statusCode == 200) {
-      var json = JSON.parse(body);
-      this.log(json);
-      var alarmState = json.data.alarmState;
 
-      var statusResult = new Object();
-
-      if(alarmState === "DISARM") {
+      if(alarm_status_map[state] === "Disarmed") {
         statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
-      } else if(alarmState === "ARM STAY") {
+      } else if(alarm_status_map[state] === "Armed Stay") {
         statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-      } else if(alarmState === "ARM AWAY") {
+      } else if(alarm_status_map[state] === "Armed Away") {
         statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
       }
 
       statusResult.success = true;
 
-      this.log("alarm set to " + alarmState);
+      this.log("alarm set to " + alarm_status_map[state]);
 
       this.service
         .setCharacteristic(Characteristic.SecuritySystemCurrentState, statusResult.status);
