@@ -6,7 +6,7 @@ Alarm.com plugin for [Homebridge](https://github.com/nfarina/homebridge)
 2. Install this plugin using: npm install -g homebridge-alarmdotcom
 3. Install Request using: npm install -g request
 4. Sign up for an account on [WrapAPI](http://www.wrapapi.com)
-5. Once you have a WrapAPI account, bookmark each one of API calls documented below so you can call them with your API key.
+5. Once you have a [WrapAPI](http://www.wrapapi.com) account, bookmark each one of API calls documented below so you can call them with your API key.
 6. Update your configuration file. See sample-config.json snippet below.
 
 #WrapAPI Calls
@@ -42,7 +42,7 @@ Fields:
 * "name": Can be anything (required)
 * "username": Alarm.com login username, same as app (required)
 * "password": Alarm.com login password, same as app (required)
-* "apiKey": WrapAPI.com API key for the alarmdotcom API (required)
+* "apiKey": [WrapAPI.com](http://www.wrapapi.com) API key for the alarmdotcom API (required)
 
 # Alarm.com Nag Screens
 
