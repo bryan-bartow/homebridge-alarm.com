@@ -1,12 +1,7 @@
-var webdriver = require('selenium-webdriver');
-var By = require('selenium-webdriver').By;
-var until = require('selenium-webdriver').until;
-var phantomjs = require('selenium-webdriver/phantomjs');
+var request = require("request");
 var Service, Characteristic;
 
-var url = "https://www.alarm.com/login.aspx"
-
-module.exports = function(homebridge) {
+module.exports = function (homebridge) {
 
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
@@ -20,6 +15,8 @@ function AlarmcomAccessory(log, config) {
   this.name = config["name"];
   this.username = config["username"];
   this.password = config["password"];
+  this.apiKey = config["apiKey"];
+  this.sessionUrl = "";
 
   this.service = new Service.SecuritySystem(this.name);
 
@@ -35,69 +32,74 @@ function AlarmcomAccessory(log, config) {
 
 AlarmcomAccessory.prototype.getState = function(callback) {
 
-  var statusResult = new Object();
+  initLogin(callback).bind(this);
+}
 
-	try {
+var initLogin = function(callback) {
 
-    var driver = new phantomjs.Driver();
+  this.log('getting sessionUrl');
 
-		driver.get('https://www.alarm.com/pda/Default.aspx');
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$txtLogin')).sendKeys(this.username);
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$txtPassword')).sendKeys(this.password);
-		driver.findElement(By.name('ctl00$ContentPlaceHolder1$btnLogin')).click();
+  request.get({
+    url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/initlogin/0.0.2",
+    qs: { wrapAPIKey: apiKey }
+  }, function(err, response, body) {
 
-		this.log('Logged in to alarm.com');
+    if (!err && response.statusCode == 200) {
+      var json = JSON.parse(body);
+      this.sessionUrl = json.data.sessionUrl;
 
-    return driver.getTitle().then(function(title) {
+      this.login(callback).bind(this);
+    }
+    else {
+      this.log("Error getting state (status code %s): %s", response.statusCode, err);
+      callback(err);
+    }
+  });
+}
 
-      driver.findElement(By.id('ctl00_phBody_lblArmingState')).then(function(statusElement) {
+var login = function(callback) {
 
-        statusElement.getText().then(function(stateLabel) {
+  this.log('logging in');
 
-          if(stateLabel === "Disarmed") {
-            statusResult.message = "disarmed";
-            statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
-          } else if(stateLabel === "Armed Stay") {
-            statusResult.message = "stay_armed";
-            statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-          } else if(stateLabel === "Armed Away") {
-            statusResult.message = "away_armed";
-            statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-          }
+  request.get({
+    url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/login/0.0.2",
+    qs: {
+      wrapAPIKey: this.apiKey,
+      sessionUrl: this.sessionUrl,
+      username: this.username,
+      password: this.password
+    }
+  }, function(err, response, body) {
 
-          driver.quit();
+    if (!err && response.statusCode == 200) {
+      var json = JSON.parse(body);
+      this.log(json);
+      var alarmState = json.data.alarmState;
 
-          statusResult.success = true;
-        });
+      var statusResult = new Object();
 
-      }, function(error) {
+      if(alarmState === "Disarmed") {
+        statusResult.message = "disarmed";
+        statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
+      } else if(alarmState === "Armed Stay") {
+        statusResult.message = "stay_armed";
+        statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+      } else if(alarmState === "Armed Away") {
+        statusResult.message = "away_armed";
+        statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+      }
 
-        this.log("Can't find state element");
+      statusResult.success = true;
 
-        statusResult.message = "Can't find the state element";
-        statusResult.success = false;
+      this.log(statusResult);
 
-        driver.quit();
-      });
-
-      return statusResult;
-
-		}, 1000).then(function(result) {
-
-      console.log(result);
-
-			callback(null, result.status);
-		});
-	}
-	catch(exception) {
-
-    statusResult.message = exception.message;
-    statusResult.success = false;
-
-		console.log(statusResult);
-
-		callback(statusResult);
-	}
+      callback(null, result.status);
+    }
+    else {
+      this.log("Error getting state (status code %s): %s", response.statusCode, err);
+      callback(err);
+    }
+  });
 }
 
 AlarmcomAccessory.prototype.setState = function(state, callback) {
