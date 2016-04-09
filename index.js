@@ -43,7 +43,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
       var json = JSON.parse(body);
       this.sessionUrl = json.data.sessionUrl;
 
-      this.login(callback);
+      this.login(null, callback);
     }
     else {
       this.log("Error getting sessionUrl (status code %s): %s", response.statusCode, err);
