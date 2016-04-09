@@ -55,6 +55,9 @@ AlarmcomAccessory.prototype.getState = function(callback) {
 AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
 
   this.log('logging in');
+  if(stateToSet) {
+    this.log('and setting state to ' + stateToSet);
+  }
 
   request.get({
     url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/login/0.0.2",
