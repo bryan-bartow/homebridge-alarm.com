@@ -112,7 +112,7 @@ AlarmcomAccessory.prototype.login = function(callback) {
 
       this.log(statusResult);
 
-      callback(null, result.status);
+      callback(null, statusResult.status);
     }
     else {
       this.log("Error getting state (status code %s): %s", response.statusCode, err);
