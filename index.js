@@ -12,7 +12,7 @@ var alarm_status_map = [
 module.exports = function (homebridge) {
 
   Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic.SecuritySystemAlarmType;
+  Characteristic = homebridge.hap.Characteristic;
 
   homebridge.registerAccessory("homebridge-alarmdotcom", "Alarmdotcom", AlarmcomAccessory);
 }
