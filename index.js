@@ -167,8 +167,6 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
         currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
       }
 
-      statusResult.success = true;
-
       this.log("alarm set to " + alarm_status_map[state]);
 
       this.service
