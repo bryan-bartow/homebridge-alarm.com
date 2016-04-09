@@ -162,14 +162,11 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
 
       var statusResult = new Object();
 
-      if(alarmState === "Disarmed") {
-        statusResult.message = "disarmed";
+      if(alarmState === "DISARM") {
         statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
-      } else if(alarmState === "Armed Stay") {
-        statusResult.message = "stay_armed";
+      } else if(alarmState === "ARM STAY") {
         statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-      } else if(alarmState === "Armed Away") {
-        statusResult.message = "away_armed";
+      } else if(alarmState === "ARM AWAY") {
         statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
       }
 
