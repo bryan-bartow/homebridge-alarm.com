@@ -29,7 +29,8 @@ Configuration sample:
         "name": "Security Panel",
         "username": "test@example.com",
         "password": "testpassword",
-        "apiKey": "wrapapikeygoeshere"
+        "apiKey": "wrapapikeygoeshere",
+        "apiUsername": "wrapapiusername"
     }
   ]
 },
@@ -43,6 +44,7 @@ Fields:
 * "username": Alarm.com login username, same as app (required)
 * "password": Alarm.com login password, same as app (required)
 * "apiKey": [WrapAPI.com](http://www.wrapapi.com) API key for the alarmdotcom API (required)
+* "apiUsername": [WrapAPI.com](http://www.wrapapi.com) username
 
 # Alarm.com Nag Screens
 
