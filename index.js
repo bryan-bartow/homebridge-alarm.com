@@ -76,7 +76,7 @@ var initLogin = function(callback) {
 }
 */
 
-var login = function(callback) {
+AlarmcomAccessory.prototype.login = function(callback) {
 
   this.log('logging in');
 
