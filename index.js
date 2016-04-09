@@ -32,9 +32,27 @@ function AlarmcomAccessory(log, config) {
 
 AlarmcomAccessory.prototype.getState = function(callback) {
 
-  initLogin(callback).bind(this);
-}
+  //initLogin(callback).bind(this);
+  this.log('getting sessionUrl');
 
+  request.get({
+    url: "https://wrapapi.com/use/bryanbartow/alarmdotcom/initlogin/0.0.2",
+    qs: { wrapAPIKey: apiKey }
+  }, function(err, response, body) {
+
+    if (!err && response.statusCode == 200) {
+      var json = JSON.parse(body);
+      this.sessionUrl = json.data.sessionUrl;
+
+      this.login(callback).bind(this);
+    }
+    else {
+      this.log("Error getting state (status code %s): %s", response.statusCode, err);
+      callback(err);
+    }
+  }.bind(this));
+}
+/*
 var initLogin = function(callback) {
 
   this.log('getting sessionUrl');
@@ -56,6 +74,7 @@ var initLogin = function(callback) {
     }
   });
 }
+*/
 
 var login = function(callback) {
 
