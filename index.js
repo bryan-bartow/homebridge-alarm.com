@@ -157,12 +157,14 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
 
     if (!err && response.statusCode == 200) {
 
+      var currentState;
+
       if(alarm_status_map[state] === "Disarmed") {
-        statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
+        currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
       } else if(alarm_status_map[state] === "Armed Stay") {
-        statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+        currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
       } else if(alarm_status_map[state] === "Armed Away") {
-        statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+        currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
       }
 
       statusResult.success = true;
@@ -170,9 +172,9 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
       this.log("alarm set to " + alarm_status_map[state]);
 
       this.service
-        .setCharacteristic(Characteristic.SecuritySystemCurrentState, statusResult.status);
+        .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
 
-      callback(null, statusResult.status);
+      callback(null, currentState);
     }
     else {
       this.log("Error getting state (status code %s): %s", response.statusCode, err);
