@@ -75,7 +75,7 @@ var initLogin = function(callback) {
 }
 */
 
-AlarmcomAccessory.prototype.login = function(callback) {
+AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
 
   this.log('logging in');
 
@@ -111,7 +111,11 @@ AlarmcomAccessory.prototype.login = function(callback) {
 
       this.log(statusResult);
 
-      callback(null, statusResult.status);
+      if(stateToSet) {
+        this.setAlarmState(stateToSet, callback);
+      } else {
+        callback(null, statusResult.status);
+      }
     }
     else {
       this.log("Error logging in (status code %s): %s", response.statusCode, err);
@@ -133,7 +137,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       var json = JSON.parse(body);
       this.sessionUrl = json.data.sessionUrl;
 
-      this.setAlarmState(state, callback);
+      this.login(state, callback);
     }
     else {
       this.log("Error getting sessionUrl (status code %s): %s", response.statusCode, err);
