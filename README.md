@@ -43,7 +43,7 @@ Fields:
 * "name": Can be anything (required)
 * "username": Alarm.com login username, same as app (required)
 * "password": Alarm.com login password, same as app (required)
-* "apiKey": [WrapAPI.com](http://www.wrapapi.com) API key for the alarmdotcom API (required)
+* "apiKey": [WrapAPI.com](http://www.wrapapi.com) Server API key for the alarmdotcom API (required)
 * "apiUsername": [WrapAPI.com](http://www.wrapapi.com) username
 
 # Alarm.com Nag Screens
