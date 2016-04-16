@@ -60,24 +60,16 @@ class AlarmcomAccessory {
       username: this.username,
       password: this.password,
     }).then(json => {
-      var alarmState = json.data.alarmState;
-
-      var statusResult = {};
-
-      if (alarmState === 'Disarmed') {
-        statusResult.message = 'disarmed';
-        statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
-      } else if (alarmState === 'Armed Stay') {
-        statusResult.message = 'stay_armed';
-        statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-      } else if (alarmState === 'Armed Away') {
-        statusResult.message = 'away_armed';
-        statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+      switch (json.data.alarmState) {
+        case 'Disarmed':
+          return Characteristic.SecuritySystemCurrentState.DISARMED;
+        case 'Armed Stay':
+          return Characteristic.SecuritySystemCurrentState.STAY_ARM;
+        case 'Armed Away':
+          return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+        default:
+          return null;
       }
-
-      statusResult.success = true;
-
-      return statusResult.status;
     });
   }
 
