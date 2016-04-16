@@ -48,11 +48,11 @@ class AlarmcomAccessory {
 
     return this.send('initlogin').then(json => {
       this.sessionUrl = json.data.sessionUrl;
-      return this.login(null);
+      return this.login();
     });
   }
 
-  login(stateToSet) {
+  login() {
     this.log('logging in');
 
     return this.send('login', {
@@ -77,11 +77,7 @@ class AlarmcomAccessory {
 
       statusResult.success = true;
 
-      if (stateToSet !== null) {
-        return this.setAlarmState(stateToSet);
-      } else {
-        return statusResult.status;
-      }
+      return statusResult.status;
     });
   }
 
@@ -90,7 +86,7 @@ class AlarmcomAccessory {
 
     return this.send('initlogin').then(json => {
       this.sessionUrl = json.data.sessionUrl;
-      return this.login(state);
+      return this.login().then(() => this.setAlarmState(state));
     });
   }
 
