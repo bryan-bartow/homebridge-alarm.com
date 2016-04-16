@@ -7,7 +7,7 @@ module.exports = homebridge => {
   const Characteristic = homebridge.hap.Characteristic;
   const Service = homebridge.hap.Service;
 
-  const TargetConfiguration = {
+  const TargetStateConfiguration = {
     [Characteristic.SecuritySystemTargetState.STAY_ARM]: {
       apiVerb: 'armstay',
       currentState: Characteristic.SecuritySystemCurrentState.STAY_ARM,
@@ -57,18 +57,18 @@ module.exports = homebridge => {
 
     setState(targetState) {
       return this.login().then(result => {
-        const targetConfig = TargetConfiguration[targetState];
+        const targetStateConfig = TargetStateConfiguration[targetState];
 
-        this.log('Setting state to `%s`.', targetConfig.name);
+        this.log('Setting state to `%s`.', targetStateConfig.name);
 
-        return this.send(targetConfig.apiVerb, {
+        return this.send(targetStateConfig.apiVerb, {
           sessionUrl: result.sessionUrl,
           username: this.username,
           password: this.password,
         }).then(() => {
-          this.log(`Alarm set to \`${targetConfig.name}\`.`);
+          this.log(`Alarm set to \`${targetStateConfig.name}\`.`);
 
-          const currentState = targetConfig.currentState;
+          const currentState = targetStateConfig.currentState;
 
           this.service.setCharacteristic(
             Characteristic.SecuritySystemCurrentState,
