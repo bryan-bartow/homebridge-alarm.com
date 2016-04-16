@@ -29,7 +29,6 @@ class AlarmcomAccessory {
     this.password = config.password;
     this.apiKey = config.apiKey;
     this.apiUsername = config.apiUsername;
-    this.sessionUrl = '';
 
     this.service = new Service.SecuritySystem(this.name);
 
@@ -46,17 +45,15 @@ class AlarmcomAccessory {
   getState(callback) {
     this.log('getting sessionUrl');
 
-    return this.send('initlogin').then(json => {
-      this.sessionUrl = json.data.sessionUrl;
-      return this.login();
-    });
+    return this.send('initlogin')
+      .then(json => this.login(json.data.sessionUrl));
   }
 
-  login() {
+  login(sessionUrl) {
     this.log('logging in');
 
     return this.send('login', {
-      sessionUrl: this.sessionUrl,
+      sessionUrl,
       username: this.username,
       password: this.password,
     }).then(json => {
@@ -76,13 +73,15 @@ class AlarmcomAccessory {
   setState(state) {
     this.log('getting sessionUrl');
 
-    return this.send('initlogin').then(json => {
-      this.sessionUrl = json.data.sessionUrl;
-      return this.login().then(() => this.setAlarmState(state));
-    });
+    return this.send('initlogin')
+      .then(json => {
+        const sessionUrl = json.data.sessionUrl;
+        return this.login(sessionUrl)
+          .then(() => this.setAlarmState(sessionUrl, state));
+      });
   }
 
-  setAlarmState(state) {
+  setAlarmState(sessionUrl, state) {
     this.log('setting state to ' + alarm_status_map[state]);
 
     var apiVerb = '';
@@ -97,7 +96,7 @@ class AlarmcomAccessory {
     }
 
     this.send(apiVerb, {
-      sessionUrl: this.sessionUrl,
+      sessionUrl,
       username: this.username,
       password: this.password,
     }).then(() => {
