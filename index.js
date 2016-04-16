@@ -55,6 +55,31 @@ module.exports = homebridge => {
       return this.login().then(result => result.currentState);
     }
 
+    setState(targetState) {
+      return this.login().then(result => {
+        const targetConfig = TargetConfiguration[targetState];
+
+        this.log('setting state to ' + targetConfig.name);
+
+        return this.send(targetConfig.apiVerb, {
+          sessionUrl: result.sessionUrl,
+          username: this.username,
+          password: this.password,
+        }).then(() => {
+          this.log('alarm set to ' + targetConfig.name);
+
+          const currentState = targetConfig.currentState;
+
+          this.service.setCharacteristic(
+            Characteristic.SecuritySystemCurrentState,
+            currentState
+          );
+
+          return currentState;
+        });
+      });
+    }
+
     login() {
       this.log('getting sessionUrl');
 
@@ -83,31 +108,6 @@ module.exports = homebridge => {
             sessionUrl,
             currentState,
           };
-        });
-      });
-    }
-
-    setState(targetState) {
-      return this.login().then(result => {
-        const targetConfig = TargetConfiguration[targetState];
-
-        this.log('setting state to ' + targetConfig.name);
-
-        return this.send(targetConfig.apiVerb, {
-          sessionUrl: result.sessionUrl,
-          username: this.username,
-          password: this.password,
-        }).then(() => {
-          this.log('alarm set to ' + targetConfig.name);
-
-          const currentState = targetConfig.currentState;
-
-          this.service.setCharacteristic(
-            Characteristic.SecuritySystemCurrentState,
-            currentState
-          );
-
-          return currentState;
         });
       });
     }
