@@ -43,79 +43,78 @@ class AlarmcomAccessory {
   }
 
   getState(callback) {
-    this.log('getting sessionUrl');
-
-    return this.send('initlogin')
-      .then(json => this.login(json.data.sessionUrl));
+    return this.login().then(result => result.currentState);
   }
 
-  login(sessionUrl) {
-    this.log('logging in');
+  login() {
+    this.log('getting sessionUrl');
 
-    return this.send('login', {
-      sessionUrl,
-      username: this.username,
-      password: this.password,
-    }).then(json => {
-      switch (json.data.alarmState) {
-        case 'Disarmed':
-          return Characteristic.SecuritySystemCurrentState.DISARMED;
-        case 'Armed Stay':
-          return Characteristic.SecuritySystemCurrentState.STAY_ARM;
-        case 'Armed Away':
-          return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-        default:
-          return null;
-      }
+    return this.send('initlogin').then(json => {
+      const sessionUrl = json.data.sessionUrl;
+
+      this.log('logging in');
+
+      return this.send('login', {
+        sessionUrl,
+        username: this.username,
+        password: this.password,
+      }).then(json => {
+        switch (json.data.alarmState) {
+          case 'Disarmed':
+            return Characteristic.SecuritySystemCurrentState.DISARMED;
+          case 'Armed Stay':
+            return Characteristic.SecuritySystemCurrentState.STAY_ARM;
+          case 'Armed Away':
+            return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+          default:
+            return null;
+        }
+      }).then(currentState => {
+        return {
+          sessionUrl,
+          currentState,
+        };
+      });
     });
   }
 
-  setState(state) {
-    this.log('getting sessionUrl');
+  setState(targetState) {
+    return this.login().then(result => {
+      this.log('setting state to ' + alarm_status_map[targetState]);
 
-    return this.send('initlogin')
-      .then(json => {
-        const sessionUrl = json.data.sessionUrl;
-        return this.login(sessionUrl)
-          .then(() => this.setAlarmState(sessionUrl, state));
-      });
-  }
+      var apiVerb = '';
 
-  setAlarmState(sessionUrl, state) {
-    this.log('setting state to ' + alarm_status_map[state]);
-
-    var apiVerb = '';
-
-    // Figure out which API to call
-    if (state === Characteristic.SecuritySystemTargetState.DISARM) {
-      apiVerb = 'disarm';
-    } else if (state === Characteristic.SecuritySystemTargetState.STAY_ARM) {
-      apiVerb = 'armstay';
-    } else if (state === Characteristic.SecuritySystemTargetState.AWAY_ARM) {
-      apiVerb = 'armaway';
-    }
-
-    this.send(apiVerb, {
-      sessionUrl,
-      username: this.username,
-      password: this.password,
-    }).then(() => {
-      var currentState;
-
-      if (alarm_status_map[state] === 'Disarmed') {
-        currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
-      } else if (alarm_status_map[state] === 'Armed Stay') {
-        currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-      } else if (alarm_status_map[state] === 'Armed Away') {
-        currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+      // Figure out which API to call
+      if (targetState === Characteristic.SecuritySystemTargetState.DISARM) {
+        apiVerb = 'disarm';
+      } else if (targetState === Characteristic.SecuritySystemTargetState.STAY_ARM) {
+        apiVerb = 'armstay';
+      } else if (targetState === Characteristic.SecuritySystemTargetState.AWAY_ARM) {
+        apiVerb = 'armaway';
       }
 
-      this.log('alarm set to ' + alarm_status_map[state]);
+      this.send(apiVerb, {
+        sessionUrl: result.sessionUrl,
+        username: this.username,
+        password: this.password,
+      }).then(() => {
+        var currentState;
 
-      this.service
-        .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
+        if (alarm_status_map[targetState] === 'Disarmed') {
+          currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
+        } else if (alarm_status_map[targetState] === 'Armed Stay') {
+          currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+        } else if (alarm_status_map[targetState] === 'Armed Away') {
+          currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+        }
 
-      return currentState;
+        this.log('alarm set to ' + alarm_status_map[targetState]);
+
+        this.service
+          .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
+
+        return currentState;
+      });
     });
   }
 
