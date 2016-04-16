@@ -59,14 +59,14 @@ module.exports = homebridge => {
       return this.login().then(result => {
         const targetConfig = TargetConfiguration[targetState];
 
-        this.log('setting state to ' + targetConfig.name);
+        this.log('Setting state to `%s`.', targetConfig.name);
 
         return this.send(targetConfig.apiVerb, {
           sessionUrl: result.sessionUrl,
           username: this.username,
           password: this.password,
         }).then(() => {
-          this.log('alarm set to ' + targetConfig.name);
+          this.log(`Alarm set to \`${targetConfig.name}\`.`);
 
           const currentState = targetConfig.currentState;
 
@@ -81,12 +81,12 @@ module.exports = homebridge => {
     }
 
     login() {
-      this.log('getting sessionUrl');
+      this.log('Getting `sessionUrl`.');
 
       return this.send('initlogin').then(json => {
         const sessionUrl = json.data.sessionUrl;
 
-        this.log('logging in');
+        this.log('Logging in.');
 
         return this.send('login', {
           sessionUrl,
@@ -118,7 +118,12 @@ module.exports = homebridge => {
         qs: Object.assign({wrapAPIKey: this.apiKey}, params),
         url: `https://wrapapi.com/use/${this.apiUsername}/alarmdotcom/${action}/0.0.2`,
       }).catch(reason => {
-        this.log('Error in `%s` (status code %s): %s', action, reason.response.statusCode, reason.error);
+        this.log(
+          'Error in `%s` (status code %s): %s',
+          action,
+          reason.response.statusCode,
+          reason.error
+        );
         throw reason.error;
       });
     }
