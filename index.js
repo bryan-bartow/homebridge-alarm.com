@@ -9,7 +9,7 @@ var alarm_status_map = [
     'Alarm Triggered',
 ];
 
-module.exports = function (homebridge) {
+module.exports = homebridge => {
 
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
@@ -46,7 +46,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
   request.get({
     url: 'https://wrapapi.com/use/' + this.apiUsername + '/alarmdotcom/initlogin/0.0.2',
     qs: { wrapAPIKey: this.apiKey },
-  }, function(err, response, body) {
+  }, (err, response, body) => {
 
     if (!err && response.statusCode === 200) {
       var json = JSON.parse(body);
@@ -57,7 +57,7 @@ AlarmcomAccessory.prototype.getState = function(callback) {
       this.log('Error getting sessionUrl (status code %s): %s', response.statusCode, err);
       callback(err);
     }
-  }.bind(this));
+  });
 };
 
 AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
@@ -72,7 +72,7 @@ AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
       username: this.username,
       password: this.password,
     },
-  }, function(err, response, body) {
+  }, (err, response, body) => {
 
     if (!err && response.statusCode === 200) {
       var json = JSON.parse(body);
@@ -102,7 +102,7 @@ AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
       this.log('Error logging in (status code %s): %s', response.statusCode, err);
       callback(err);
     }
-  }.bind(this));
+  });
 };
 
 AlarmcomAccessory.prototype.setState = function(state, callback) {
@@ -112,7 +112,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
   request.get({
     url: 'https://wrapapi.com/use/' + this.apiUsername + '/alarmdotcom/initlogin/0.0.2',
     qs: { wrapAPIKey: this.apiKey },
-  }, function(err, response, body) {
+  }, (err, response, body) => {
 
     if (!err && response.statusCode === 200) {
       var json = JSON.parse(body);
@@ -123,7 +123,7 @@ AlarmcomAccessory.prototype.setState = function(state, callback) {
       this.log('Error getting sessionUrl (status code %s): %s', response.statusCode, err);
       callback(err);
     }
-  }.bind(this));
+  });
 };
 
 AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
@@ -149,7 +149,7 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
       username: this.username,
       password: this.password,
     },
-  }, function(err, response, body) {
+  }, (err, response, body) => {
 
     if (!err && response.statusCode === 200) {
 
@@ -173,7 +173,7 @@ AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
       this.log('Error getting state (status code %s): %s', response.statusCode, err);
       callback(err);
     }
-  }.bind(this));
+  });
 };
 
 AlarmcomAccessory.prototype.getServices = function() {
