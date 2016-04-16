@@ -1,6 +1,8 @@
 'use strict';
 
-var request = require('request');
+const nodeify = require('nodeify');
+const rp = require('request-promise');
+
 var Service, Characteristic;
 
 var alarm_status_map = [
@@ -33,99 +35,66 @@ class AlarmcomAccessory {
 
     this.service
       .getCharacteristic(Characteristic.SecuritySystemCurrentState)
-      .on('get', this.getState.bind(this));
+      .on('get', callback => nodeify(this.getState(), callback));
 
     this.service
       .getCharacteristic(Characteristic.SecuritySystemTargetState)
-      .on('get', this.getState.bind(this))
-      .on('set', this.setState.bind(this));
+      .on('get', callback => nodeify(this.getState(), callback))
+      .on('set', (state, callback) => nodeify(this.setState(state), callback));
   }
 
   getState(callback) {
     this.log('getting sessionUrl');
 
-    request.get({
-      url: 'https://wrapapi.com/use/' + this.apiUsername + '/alarmdotcom/initlogin/0.0.2',
-      qs: { wrapAPIKey: this.apiKey },
-    }, (err, response, body) => {
-
-      if (!err && response.statusCode === 200) {
-        var json = JSON.parse(body);
-        this.sessionUrl = json.data.sessionUrl;
-
-        this.login(null, callback);
-      } else {
-        this.log('Error getting sessionUrl (status code %s): %s', response.statusCode, err);
-        callback(err);
-      }
+    return this.send('initlogin').then(json => {
+      this.sessionUrl = json.data.sessionUrl;
+      return this.login(null);
     });
   }
 
-  login(stateToSet, callback) {
+  login(stateToSet) {
     this.log('logging in');
 
-    request.get({
-      url: 'https://wrapapi.com/use/' + this.apiUsername + '/alarmdotcom/login/0.0.2',
-      qs: {
-        wrapAPIKey: this.apiKey,
-        sessionUrl: this.sessionUrl,
-        username: this.username,
-        password: this.password,
-      },
-    }, (err, response, body) => {
+    return this.send('login', {
+      sessionUrl: this.sessionUrl,
+      username: this.username,
+      password: this.password,
+    }).then(json => {
+      var alarmState = json.data.alarmState;
 
-      if (!err && response.statusCode === 200) {
-        var json = JSON.parse(body);
-        var alarmState = json.data.alarmState;
+      var statusResult = {};
 
-        var statusResult = {};
+      if (alarmState === 'Disarmed') {
+        statusResult.message = 'disarmed';
+        statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
+      } else if (alarmState === 'Armed Stay') {
+        statusResult.message = 'stay_armed';
+        statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+      } else if (alarmState === 'Armed Away') {
+        statusResult.message = 'away_armed';
+        statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+      }
 
-        if (alarmState === 'Disarmed') {
-          statusResult.message = 'disarmed';
-          statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
-        } else if (alarmState === 'Armed Stay') {
-          statusResult.message = 'stay_armed';
-          statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-        } else if (alarmState === 'Armed Away') {
-          statusResult.message = 'away_armed';
-          statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-        }
+      statusResult.success = true;
 
-        statusResult.success = true;
-
-        if (stateToSet !== null) {
-          this.setAlarmState(stateToSet, callback);
-        } else {
-          callback(null, statusResult.status);
-        }
+      if (stateToSet !== null) {
+        return this.setAlarmState(stateToSet);
       } else {
-        this.log('Error logging in (status code %s): %s', response.statusCode, err);
-        callback(err);
+        return statusResult.status;
       }
     });
   }
 
-  setState(state, callback) {
+  setState(state) {
     this.log('getting sessionUrl');
 
-    request.get({
-      url: 'https://wrapapi.com/use/' + this.apiUsername + '/alarmdotcom/initlogin/0.0.2',
-      qs: { wrapAPIKey: this.apiKey },
-    }, (err, response, body) => {
-
-      if (!err && response.statusCode === 200) {
-        var json = JSON.parse(body);
-        this.sessionUrl = json.data.sessionUrl;
-
-        this.login(state, callback);
-      } else {
-        this.log('Error getting sessionUrl (status code %s): %s', response.statusCode, err);
-        callback(err);
-      }
+    return this.send('initlogin').then(json => {
+      this.sessionUrl = json.data.sessionUrl;
+      return this.login(state);
     });
   }
 
-  setAlarmState(state, callback) {
+  setAlarmState(state) {
     this.log('setting state to ' + alarm_status_map[state]);
 
     var apiVerb = '';
@@ -139,38 +108,38 @@ class AlarmcomAccessory {
       apiVerb = 'armaway';
     }
 
-    request.get({
-      url: 'https://wrapapi.com/use/' + this.apiUsername + '/alarmdotcom/' + apiVerb + '/0.0.2',
-      qs: {
-        wrapAPIKey: this.apiKey,
-        sessionUrl: this.sessionUrl,
-        username: this.username,
-        password: this.password,
-      },
-    }, (err, response, body) => {
+    this.send(apiVerb, {
+      sessionUrl: this.sessionUrl,
+      username: this.username,
+      password: this.password,
+    }).then(() => {
+      var currentState;
 
-      if (!err && response.statusCode === 200) {
-
-        var currentState;
-
-        if (alarm_status_map[state] === 'Disarmed') {
-          currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
-        } else if (alarm_status_map[state] === 'Armed Stay') {
-          currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-        } else if (alarm_status_map[state] === 'Armed Away') {
-          currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-        }
-
-        this.log('alarm set to ' + alarm_status_map[state]);
-
-        this.service
-          .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
-
-        callback(null, currentState);
-      } else {
-        this.log('Error getting state (status code %s): %s', response.statusCode, err);
-        callback(err);
+      if (alarm_status_map[state] === 'Disarmed') {
+        currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
+      } else if (alarm_status_map[state] === 'Armed Stay') {
+        currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+      } else if (alarm_status_map[state] === 'Armed Away') {
+        currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
       }
+
+      this.log('alarm set to ' + alarm_status_map[state]);
+
+      this.service
+        .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
+
+      return currentState;
+    });
+  }
+
+  send(action, params) {
+    return rp({
+      json: true,
+      qs: Object.assign({wrapAPIKey: this.apiKey}, params),
+      url: `https://wrapapi.com/use/${this.apiUsername}/alarmdotcom/${action}/0.0.2`,
+    }).catch(reason => {
+      this.log('Error in `%s` (status code %s): %s', action, reason.response.statusCode, reason.error);
+      throw reason.error;
     });
   }
 

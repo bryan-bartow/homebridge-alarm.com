@@ -18,6 +18,7 @@
     "homebridge": ">=0.2.0"
   },
   "dependencies": {
-    "request": "^2.70.0"
+    "nodeify": "^1.0.0",
+    "request-promise": "^2.0.1"
   }
 }
