@@ -1,187 +1,137 @@
-var request = require("request");
-var Service, Characteristic;
+'use strict';
 
-var alarm_status_map = [
-    'Armed Stay',
-    'Armed Away',
-    'Armed Night',
-    'Disarmed',
-    'Alarm Triggered'
-];
+const nodeify = require('nodeify');
+const rp = require('request-promise');
 
-module.exports = function (homebridge) {
+module.exports = homebridge => {
+  const Characteristic = homebridge.hap.Characteristic;
+  const Service = homebridge.hap.Service;
 
-  Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic;
+  const TargetStateConfiguration = {
+    [Characteristic.SecuritySystemTargetState.STAY_ARM]: {
+      apiVerb: 'armstay',
+      currentState: Characteristic.SecuritySystemCurrentState.STAY_ARM,
+      name: 'Armed Stay',
+    },
+    [Characteristic.SecuritySystemTargetState.AWAY_ARM]: {
+      apiVerb: 'armaway',
+      currentState: Characteristic.SecuritySystemCurrentState.AWAY_ARM,
+      name: 'Armed Away',
+    },
+    [Characteristic.SecuritySystemTargetState.NIGHT_ARM]: {
+      apiVerb: '', // TODO: Create a WrapAPI verb for this.
+      currentState: Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
+      name: 'Armed Night',
+    },
+    [Characteristic.SecuritySystemTargetState.DISARM]: {
+      apiVerb: 'disarm',
+      currentState: Characteristic.SecuritySystemCurrentState.DISARMED,
+      name: 'Disarmed',
+    },
+  };
 
-  homebridge.registerAccessory("homebridge-alarmdotcom", "Alarmdotcom", AlarmcomAccessory);
-}
+  class AlarmcomAccessory {
+    constructor(log, config) {
+      this.log = log;
+      this.name = config.name;
+      this.username = config.username;
+      this.password = config.password;
+      this.apiKey = config.apiKey;
+      this.apiUsername = config.apiUsername;
 
-function AlarmcomAccessory(log, config) {
-
-  this.log = log;
-  this.name = config["name"];
-  this.username = config["username"];
-  this.password = config["password"];
-  this.apiKey = config["apiKey"];
-  this.apiUsername = config["apiUsername"];
-  this.sessionUrl = "";
-
-  this.service = new Service.SecuritySystem(this.name);
-
-  this.service
-    .getCharacteristic(Characteristic.SecuritySystemCurrentState)
-    .on('get', this.getState.bind(this));
-
-  this.service
-    .getCharacteristic(Characteristic.SecuritySystemTargetState)
-    .on('get', this.getState.bind(this))
-    .on('set', this.setState.bind(this));
-}
-
-AlarmcomAccessory.prototype.getState = function(callback) {
-
-  this.log('getting sessionUrl');
-
-  request.get({
-    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/initlogin/0.0.2",
-    qs: { wrapAPIKey: this.apiKey }
-  }, function(err, response, body) {
-
-    if (!err && response.statusCode == 200) {
-      var json = JSON.parse(body);
-      this.sessionUrl = json.data.sessionUrl;
-
-      this.login(null, callback);
-    }
-    else {
-      this.log("Error getting sessionUrl (status code %s): %s", response.statusCode, err);
-      callback(err);
-    }
-  }.bind(this));
-}
-
-AlarmcomAccessory.prototype.login = function(stateToSet, callback) {
-
-  this.log('logging in');
-
-  request.get({
-    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/login/0.0.2",
-    qs: {
-      wrapAPIKey: this.apiKey,
-      sessionUrl: this.sessionUrl,
-      username: this.username,
-      password: this.password
-    }
-  }, function(err, response, body) {
-
-    if (!err && response.statusCode == 200) {
-      var json = JSON.parse(body);
-      var alarmState = json.data.alarmState;
-
-      var statusResult = new Object();
-
-      if(alarmState === "Disarmed") {
-        statusResult.message = "disarmed";
-        statusResult.status = Characteristic.SecuritySystemCurrentState.DISARMED;
-      } else if(alarmState === "Armed Stay") {
-        statusResult.message = "stay_armed";
-        statusResult.status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-      } else if(alarmState === "Armed Away") {
-        statusResult.message = "away_armed";
-        statusResult.status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-      }
-
-      statusResult.success = true;
-
-      if(stateToSet !== null) {
-        this.setAlarmState(stateToSet, callback);
-      } else {
-        callback(null, statusResult.status);
-      }
-    }
-    else {
-      this.log("Error logging in (status code %s): %s", response.statusCode, err);
-      callback(err);
-    }
-  }.bind(this));
-}
-
-AlarmcomAccessory.prototype.setState = function(state, callback) {
-
-  this.log('getting sessionUrl');
-
-  request.get({
-    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/initlogin/0.0.2",
-    qs: { wrapAPIKey: this.apiKey }
-  }, function(err, response, body) {
-
-    if (!err && response.statusCode == 200) {
-      var json = JSON.parse(body);
-      this.sessionUrl = json.data.sessionUrl;
-
-      this.login(state, callback);
-    }
-    else {
-      this.log("Error getting sessionUrl (status code %s): %s", response.statusCode, err);
-      callback(err);
-    }
-  }.bind(this));
-}
-
-AlarmcomAccessory.prototype.setAlarmState = function(state, callback) {
-
-  this.log('setting state to ' + alarm_status_map[state]);
-
-  var apiVerb = "";
-
-  // Figure out which API to call
-  if(state === Characteristic.SecuritySystemTargetState.DISARM) {
-    apiVerb = "disarm";
-  }
-  else if(state === Characteristic.SecuritySystemTargetState.STAY_ARM) {
-    apiVerb = "armstay";
-  }
-  else if(state === Characteristic.SecuritySystemTargetState.AWAY_ARM) {
-    apiVerb = "armaway";
-  }
-
-  request.get({
-    url: "https://wrapapi.com/use/" + this.apiUsername + "/alarmdotcom/" + apiVerb + "/0.0.2",
-    qs: {
-      wrapAPIKey: this.apiKey,
-      sessionUrl: this.sessionUrl,
-      username: this.username,
-      password: this.password
-    }
-  }, function(err, response, body) {
-
-    if (!err && response.statusCode == 200) {
-
-      var currentState;
-
-      if(alarm_status_map[state] === "Disarmed") {
-        currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
-      } else if(alarm_status_map[state] === "Armed Stay") {
-        currentState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-      } else if(alarm_status_map[state] === "Armed Away") {
-        currentState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-      }
-
-      this.log("alarm set to " + alarm_status_map[state]);
+      this.service = new Service.SecuritySystem(this.name);
 
       this.service
-        .setCharacteristic(Characteristic.SecuritySystemCurrentState, currentState);
+        .getCharacteristic(Characteristic.SecuritySystemCurrentState)
+        .on('get', callback => nodeify(this.getState(), callback));
 
-      callback(null, currentState);
+      this.service
+        .getCharacteristic(Characteristic.SecuritySystemTargetState)
+        .on('get', callback => nodeify(this.getState(), callback))
+        .on('set', (state, callback) => nodeify(this.setState(state), callback));
     }
-    else {
-      this.log("Error getting state (status code %s): %s", response.statusCode, err);
-      callback(err);
-    }
-  }.bind(this));
-}
 
-AlarmcomAccessory.prototype.getServices = function() {
-  return [this.service];
-}
+    getState(callback) {
+      return this.login().then(result => result.currentState);
+    }
+
+    setState(targetState) {
+      return this.login().then(result => {
+        const targetStateConfig = TargetStateConfiguration[targetState];
+
+        this.log('Setting state to `%s`.', targetStateConfig.name);
+
+        return this.send(targetStateConfig.apiVerb, {
+          sessionUrl: result.sessionUrl,
+          username: this.username,
+          password: this.password,
+        }).then(() => {
+          this.log(`Alarm set to \`${targetStateConfig.name}\`.`);
+
+          const currentState = targetStateConfig.currentState;
+
+          this.service.setCharacteristic(
+            Characteristic.SecuritySystemCurrentState,
+            currentState
+          );
+
+          return currentState;
+        });
+      });
+    }
+
+    login() {
+      this.log('Getting `sessionUrl`.');
+
+      return this.send('initlogin').then(json => {
+        const sessionUrl = json.data.sessionUrl;
+
+        this.log('Logging in.');
+
+        return this.send('login', {
+          sessionUrl,
+          username: this.username,
+          password: this.password,
+        }).then(json => {
+          switch (json.data.alarmState) {
+            case 'Disarmed':
+              return Characteristic.SecuritySystemCurrentState.DISARMED;
+            case 'Armed Stay':
+              return Characteristic.SecuritySystemCurrentState.STAY_ARM;
+            case 'Armed Away':
+              return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+            default:
+              return null;
+          }
+        }).then(currentState => {
+          return {
+            sessionUrl,
+            currentState,
+          };
+        });
+      });
+    }
+
+    send(action, params) {
+      return rp({
+        json: true,
+        qs: Object.assign({wrapAPIKey: this.apiKey}, params),
+        url: `https://wrapapi.com/use/${this.apiUsername}/alarmdotcom/${action}/0.0.2`,
+      }).catch(reason => {
+        this.log(
+          'Error in `%s` (status code %s): %s',
+          action,
+          reason.response.statusCode,
+          reason.error
+        );
+        throw reason.error;
+      });
+    }
+
+    getServices() {
+      return [this.service];
+    }
+  }
+
+  homebridge.registerAccessory('homebridge-alarmdotcom', 'Alarmdotcom', AlarmcomAccessory);
+};
