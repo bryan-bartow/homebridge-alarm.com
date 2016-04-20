@@ -51,7 +51,7 @@ module.exports = homebridge => {
         .on('set', (state, callback) => nodeify(this.setState(state), callback));
     }
 
-    getState(callback) {
+    getState() {
       return this.login().then(result => result.currentState);
     }
 
