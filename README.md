@@ -9,7 +9,7 @@ Alarm.com plugin for [Homebridge](https://github.com/nfarina/homebridge)
 5. Once you have a [WrapAPI](http://www.wrapapi.com) account, bookmark each one of API calls documented below so you can call them with your server API key.
 6. Update your configuration file. See sample-config.json snippet below.
 
-#WrapAPI Calls
+# WrapAPI Calls
 Bookmark each of the following calls on [WrapAPI](http://www.wrapapi.com). Once you do this and generate a server API key you can call the API
 * [initlogin](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/initlogin/latest)
 * [login](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/login/latest)
@@ -23,9 +23,9 @@ Configuration sample:
 
  ```
 {
-  "accessories": [
+  "platforms": [
     {
-        "accessory": "Alarmdotcom",
+        "platform": "Alarmdotcom",
         "name": "Security Panel",
         "username": "test@example.com",
         "password": "testpassword",
@@ -37,9 +37,9 @@ Configuration sample:
 
 ```
 
-Fields: 
+Fields:
 
-* "accessory": Must always be "Alarmdotcom" (required)
+* "platform": Must always be "Alarmdotcom" (required)
 * "name": Can be anything (required)
 * "username": Alarm.com login username, same as app (required)
 * "password": Alarm.com login password, same as app (required)

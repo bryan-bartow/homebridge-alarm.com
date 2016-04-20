@@ -4,8 +4,10 @@ const nodeify = require('nodeify');
 const rp = require('request-promise');
 
 module.exports = homebridge => {
+  const Accessory = homebridge.platformAccessory;
   const Characteristic = homebridge.hap.Characteristic;
   const Service = homebridge.hap.Service;
+  const UUIDGen = homebridge.hap.uuid;
 
   const TargetStateConfiguration = {
     [Characteristic.SecuritySystemTargetState.STAY_ARM]: {
@@ -30,69 +32,82 @@ module.exports = homebridge => {
     },
   };
 
-  class AlarmcomAccessory {
-    constructor(log, config) {
-      this.log = log;
-      this.name = config.name;
-      this.username = config.username;
-      this.password = config.password;
-      this.apiKey = config.apiKey;
-      this.apiUsername = config.apiUsername;
+  class ADCPlatform {
+     constructor(log, config) {
+       this.api = new ADCWrapAPI(log, config);
+       this.log = log;
+       this.name = config.name;
+     }
 
-      this.service = new Service.SecuritySystem(this.name);
+    accessories(callback) {
+      callback([
+        new ADCSecuritySystemAccessory(this, this.name),
+      ]);
+    }
+  }
 
-      this.service
+  class ADCSecuritySystemAccessory extends Accessory {
+    constructor(platform, name) {
+      const displayName = `Alarm.com ${name}`;
+      const uuid = UUIDGen.generate('alarmdotcom.security-system');
+      super(displayName, uuid);
+
+      // Homebridge reqiures these.
+      this.name = displayName;
+      this.uuid_base = uuid;
+
+      this.api = platform.api;
+      this.log = platform.log;
+
+      this.addService(new Service.SecuritySystem(name));
+
+      this.getService(Service.SecuritySystem)
         .getCharacteristic(Characteristic.SecuritySystemCurrentState)
         .on('get', callback => nodeify(this.getState(), callback));
 
-      this.service
+      this.getService(Service.SecuritySystem)
         .getCharacteristic(Characteristic.SecuritySystemTargetState)
         .on('get', callback => nodeify(this.getState(), callback))
         .on('set', (state, callback) => nodeify(this.setState(state), callback));
     }
 
-    getState(callback) {
-      return this.login().then(result => result.currentState);
+    getState() {
+      return this.api.login().then(session => session.currentState);
     }
 
     setState(targetState) {
-      return this.login().then(result => {
+      return this.api.login().then(session => {
         const targetStateConfig = TargetStateConfiguration[targetState];
+        this.log(`Setting security system to \`${targetStateConfig.name}\`.`);
 
-        this.log('Setting state to `%s`.', targetStateConfig.name);
-
-        return this.send(targetStateConfig.apiVerb, {
-          sessionUrl: result.sessionUrl,
-          username: this.username,
-          password: this.password,
-        }).then(() => {
-          this.log(`Alarm set to \`${targetStateConfig.name}\`.`);
-
-          const currentState = targetStateConfig.currentState;
-
-          this.service.setCharacteristic(
+        return session.send(targetStateConfig.apiVerb).then(() => {
+          this.getService(Service.SecuritySystem).setCharacteristic(
             Characteristic.SecuritySystemCurrentState,
-            currentState
+            targetStateConfig.currentState
           );
-
-          return currentState;
         });
       });
     }
 
+    getServices() {
+      return this.services;
+    }
+  }
+
+  class ADCWrapAPI {
+    constructor(log, config) {
+      this.log = log;
+      this.config = config;
+    }
+
     login() {
-      this.log('Getting `sessionUrl`.');
-
       return this.send('initlogin').then(json => {
-        const sessionUrl = json.data.sessionUrl;
-
-        this.log('Logging in.');
-
-        return this.send('login', {
-          sessionUrl,
-          username: this.username,
-          password: this.password,
-        }).then(json => {
+        const sessionParams = {
+          sessionUrl: json.data.sessionUrl,
+          username: this.config.username,
+          password: this.config.password,
+        };
+        return this.send('login', sessionParams).then(json => {
           switch (json.data.alarmState) {
             case 'Disarmed':
               return Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -105,8 +120,8 @@ module.exports = homebridge => {
           }
         }).then(currentState => {
           return {
-            sessionUrl,
             currentState,
+            send: action => this.send(action, sessionParams),
           };
         });
       });
@@ -115,8 +130,8 @@ module.exports = homebridge => {
     send(action, params) {
       return rp({
         json: true,
-        qs: Object.assign({wrapAPIKey: this.apiKey}, params),
-        url: `https://wrapapi.com/use/${this.apiUsername}/alarmdotcom/${action}/0.0.2`,
+        qs: Object.assign({wrapAPIKey: this.config.apiKey}, params),
+        url: `https://wrapapi.com/use/${this.config.apiUsername}/alarmdotcom/${action}/0.0.2`,
       }).catch(reason => {
         this.log(
           'Error in `%s` (status code %s): %s',
@@ -127,11 +142,7 @@ module.exports = homebridge => {
         throw reason.error;
       });
     }
-
-    getServices() {
-      return [this.service];
-    }
   }
 
-  homebridge.registerAccessory('homebridge-alarmdotcom', 'Alarmdotcom', AlarmcomAccessory);
+  homebridge.registerPlatform('homebridge-alarmdotcom', 'Alarmdotcom', ADCPlatform);
 };
