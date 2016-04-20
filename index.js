@@ -131,7 +131,7 @@ module.exports = homebridge => {
       return rp({
         json: true,
         qs: Object.assign({wrapAPIKey: this.config.apiKey}, params),
-        url: `https://wrapapi.com/use/${this.config.apiUsername}/alarmdotcom/${action}/0.0.2`,
+        url: `https://wrapapi.com/use/${this.config.apiUsername}/alarmdotcom/${action}/0.0.3`,
       }).catch(reason => {
         this.log(
           'Error in `%s` (status code %s): %s',
