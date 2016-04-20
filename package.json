@@ -1,6 +1,6 @@
 {
   "name": "homebridge-alarmdotcom",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Alarm.com plugin for homebridge: https://github.com/nfarina/homebridge",
   "license": "ISC",
   "keywords": [
