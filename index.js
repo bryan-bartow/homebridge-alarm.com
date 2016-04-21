@@ -52,7 +52,7 @@ module.exports = homebridge => {
       const uuid = UUIDGen.generate('alarmdotcom.security-system');
       super(displayName, uuid);
 
-      // Homebridge reqiures these.
+      // Homebridge requires these.
       this.name = displayName;
       this.uuid_base = uuid;
 
