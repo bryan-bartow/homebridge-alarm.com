@@ -52,7 +52,7 @@ module.exports = homebridge => {
       const uuid = UUIDGen.generate('alarmdotcom.security-system');
       super(displayName, uuid);
 
-      // Homebridge reqiures these.
+      // Homebridge requires these.
       this.name = displayName;
       this.uuid_base = uuid;
 
@@ -102,12 +102,12 @@ module.exports = homebridge => {
 
     login() {
       return this.send('initlogin').then(json => {
-        const sessionParams = {
-          sessionUrl: json.data.sessionUrl,
+        const sessionUrl = json.data.sessionUrl;
+        return this.send('login', {
+          sessionUrl,
           username: this.config.username,
           password: this.config.password,
-        };
-        return this.send('login', sessionParams).then(json => {
+        }).then(json => {
           switch (json.data.alarmState) {
             case 'Disarmed':
               return Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -121,7 +121,7 @@ module.exports = homebridge => {
         }).then(currentState => {
           return {
             currentState,
-            send: action => this.send(action, sessionParams),
+            send: action => this.send(action, {sessionUrl}),
           };
         });
       });
