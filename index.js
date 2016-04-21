@@ -11,12 +11,12 @@ module.exports = homebridge => {
 
   const TargetStateConfiguration = {
     [Characteristic.SecuritySystemTargetState.STAY_ARM]: {
-      apiVerb: 'armstay',
+      apiVerb: 'armstay/0.0.3',
       currentState: Characteristic.SecuritySystemCurrentState.STAY_ARM,
       name: 'Armed Stay',
     },
     [Characteristic.SecuritySystemTargetState.AWAY_ARM]: {
-      apiVerb: 'armaway',
+      apiVerb: 'armaway/0.0.3',
       currentState: Characteristic.SecuritySystemCurrentState.AWAY_ARM,
       name: 'Armed Away',
     },
@@ -26,7 +26,7 @@ module.exports = homebridge => {
       name: 'Armed Night',
     },
     [Characteristic.SecuritySystemTargetState.DISARM]: {
-      apiVerb: 'disarm',
+      apiVerb: 'disarm/0.0.3',
       currentState: Characteristic.SecuritySystemCurrentState.DISARMED,
       name: 'Disarmed',
     },
@@ -101,9 +101,9 @@ module.exports = homebridge => {
     }
 
     login() {
-      return this.send('initlogin').then(json => {
+      return this.send('initlogin/0.0.3').then(json => {
         const sessionUrl = json.data.sessionUrl;
-        return this.send('login', {
+        return this.send('login/0.0.3', {
           sessionUrl,
           username: this.config.username,
           password: this.config.password,
@@ -128,14 +128,18 @@ module.exports = homebridge => {
     }
 
     send(action, params) {
+      if (!action.match(/^\w+\/\d+\.\d+\.\d+$/)) {
+        throw new Error(`Invalid \`action\` supplied: ${action}`);
+      }
+      const apiPath = `${this.config.apiUsername}/alarmdotcom/${action}`;
       return rp({
         json: true,
         qs: Object.assign({wrapAPIKey: this.config.apiKey}, params),
-        url: `https://wrapapi.com/use/${this.config.apiUsername}/alarmdotcom/${action}/0.0.3`,
+        url: `https://wrapapi.com/use/${apiPath}`,
       }).catch(reason => {
         this.log(
           'Error in `%s` (status code %s): %s',
-          action,
+          apiPath,
           reason.response.statusCode,
           reason.error
         );
