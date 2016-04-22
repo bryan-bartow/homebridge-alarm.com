@@ -9,7 +9,7 @@ module.exports = homebridge => {
   const Service = homebridge.hap.Service;
   const UUIDGen = homebridge.hap.uuid;
 
-  const TargetStateConfiguration = {
+  const TargetSecuritySystemStateConfig = {
     [Characteristic.SecuritySystemTargetState.STAY_ARM]: {
       apiVerb: 'armstay/0.0.3',
       currentState: Characteristic.SecuritySystemCurrentState.STAY_ARM,
@@ -77,7 +77,7 @@ module.exports = homebridge => {
 
     setState(targetState) {
       return this.api.login().then(session => {
-        const targetStateConfig = TargetStateConfiguration[targetState];
+        const targetStateConfig = TargetSecuritySystemStateConfig[targetState];
         this.log(`Setting security system to \`${targetStateConfig.name}\`.`);
 
         return session.send(targetStateConfig.apiVerb).then(() => {
