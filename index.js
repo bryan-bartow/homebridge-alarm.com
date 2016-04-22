@@ -9,6 +9,19 @@ module.exports = homebridge => {
   const Service = homebridge.hap.Service;
   const UUIDGen = homebridge.hap.uuid;
 
+  const TargetLockStateConfig = {
+    [Characteristic.LockTargetState.UNSECURED]: {
+      apiVerb: 'unlock/0.1.0',
+      currentState: Characteristic.LockCurrentState.UNSECURED,
+      name: 'Unlocked',
+    },
+    [Characteristic.LockTargetState.SECURED]: {
+      apiVerb: 'lock/0.1.0',
+      currentState: Characteristic.LockCurrentState.SECURED,
+      name: 'Locked',
+    },
+  };
+
   const TargetSecuritySystemStateConfig = {
     [Characteristic.SecuritySystemTargetState.STAY_ARM]: {
       apiVerb: 'armstay/0.0.3',
@@ -40,9 +53,30 @@ module.exports = homebridge => {
      }
 
     accessories(callback) {
-      callback([
-        new ADCSecuritySystemAccessory(this, this.name),
-      ]);
+      Promise.all([
+        this.getSecuritySystemAccessories(),
+        this.getLockAccessories(),
+      ]).then(
+        results => {
+          callback(Array.prototype.concat.apply([], results));
+        },
+        error => {
+          this.log('Error while registering accessories: %s', error);
+          callback([]);
+        }
+      );
+    }
+
+    getSecuritySystemAccessories() {
+      return Promise.resolve([new ADCSecuritySystemAccessory(this, this.name)]);
+    }
+
+    getLockAccessories() {
+      return this.api.login()
+        .then(session => session.send('locks/0.1.0'))
+        .then(json => json.data.locks.map(
+          lock => new ADCLockAccessory(this, lock)
+        ));
     }
   }
 
@@ -62,6 +96,63 @@ module.exports = homebridge => {
 
     getServices() {
       return this.services;
+    }
+  }
+
+  class ADCLockAccessory extends ADCAccessory {
+    constructor(platform, config) {
+      super(platform, config.name, `lock.${config.id}`);
+
+      this.config = config;
+
+      this.addService(new Service.LockMechanism(config.name));
+
+      this.getService(Service.LockMechanism)
+        .getCharacteristic(Characteristic.LockCurrentState)
+        .on('get', callback => nodeify(this.getState(), callback));
+
+      this.getService(Service.LockMechanism)
+        .getCharacteristic(Characteristic.LockTargetState)
+        .on('get', callback => nodeify(this.getState(), callback))
+        .on('set', (state, callback) => nodeify(this.setState(state), callback));
+    }
+
+    getState() {
+      return this.api.login()
+        .then(session => session.send('locks/0.1.0'))
+        .then(json => {
+          const lock = json.data.locks.find(
+            config => config.id === this.config.id
+          );
+          if (!lock) {
+            // TODO: Update Homebridge state as unreachable.
+            throw Characteristic.LockCurrentState.UNKNOWN;
+          }
+          switch (lock.status) {
+            case 'Locked':
+              return Characteristic.LockCurrentState.SECURED;
+            case 'Unlocked':
+              return Characteristic.LockCurrentState.UNSECURED;
+            default:
+              return Characteristic.LockCurrentState.UNKNOWN;
+          }
+        });
+    }
+
+    setState(targetState) {
+      return this.api.login().then(session => {
+        const targetStateConfig = TargetLockStateConfig[targetState];
+        this.log(`Setting device ${this.config.id} to \`${targetStateConfig.name}\`.`);
+
+        return session.send(targetStateConfig.apiVerb, {
+          deviceId: this.config.id,
+        }).then(() => {
+          this.getService(Service.LockMechanism).setCharacteristic(
+            Characteristic.LockCurrentState,
+            targetStateConfig.currentState
+          );
+        });
+      });
     }
   }
 
@@ -127,7 +218,9 @@ module.exports = homebridge => {
         }).then(currentState => {
           return {
             currentState,
-            send: action => this.send(action, {sessionUrl}),
+            send: (action, params) => (
+              this.send(action, Object.assign({sessionUrl}, params))
+            ),
           };
         });
       });
