@@ -46,10 +46,10 @@ module.exports = homebridge => {
     }
   }
 
-  class ADCSecuritySystemAccessory extends Accessory {
-    constructor(platform, name) {
+  class ADCAccessory extends Accessory {
+    constructor(platform, name, type) {
       const displayName = `Alarm.com ${name}`;
-      const uuid = UUIDGen.generate('alarmdotcom.security-system');
+      const uuid = UUIDGen.generate(`alarmdotcom.${type}`);
       super(displayName, uuid);
 
       // Homebridge requires these.
@@ -58,6 +58,16 @@ module.exports = homebridge => {
 
       this.api = platform.api;
       this.log = platform.log;
+    }
+
+    getServices() {
+      return this.services;
+    }
+  }
+
+  class ADCSecuritySystemAccessory extends ADCAccessory {
+    constructor(platform, name) {
+      super(platform, name, 'security-system');
 
       this.addService(new Service.SecuritySystem(name));
 
@@ -87,10 +97,6 @@ module.exports = homebridge => {
           );
         });
       });
-    }
-
-    getServices() {
-      return this.services;
     }
   }
 
