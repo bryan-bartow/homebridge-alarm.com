@@ -195,35 +195,56 @@ module.exports = homebridge => {
     constructor(log, config) {
       this.log = log;
       this.config = config;
+      this.currentSession = null;
     }
 
     login() {
-      return this.send('initlogin/0.0.3').then(json => {
-        const sessionUrl = json.data.sessionUrl;
-        return this.send('login/0.0.3', {
-          sessionUrl,
-          username: this.config.username,
-          password: this.config.password,
-        }).then(json => {
-          switch (json.data.alarmState) {
-            case 'Disarmed':
-              return Characteristic.SecuritySystemCurrentState.DISARMED;
-            case 'Armed Stay':
-              return Characteristic.SecuritySystemCurrentState.STAY_ARM;
-            case 'Armed Away':
-              return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-            default:
-              return null;
-          }
-        }).then(currentState => {
-          return {
-            currentState,
-            send: (action, params) => (
-              this.send(action, Object.assign({sessionUrl}, params))
-            ),
-          };
+      if (!this.currentSession) {
+        const session = this.send('initlogin/0.0.3').then(json => {
+          const sessionUrl = json.data.sessionUrl;
+          return this.send('login/0.0.3', {
+            sessionUrl,
+            username: this.config.username,
+            password: this.config.password,
+          }).then(json => {
+            switch (json.data.alarmState) {
+              case 'Disarmed':
+                return Characteristic.SecuritySystemCurrentState.DISARMED;
+              case 'Armed Stay':
+                return Characteristic.SecuritySystemCurrentState.STAY_ARM;
+              case 'Armed Away':
+                return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+              default:
+                return null;
+            }
+          }).then(currentState => {
+            return {
+              currentState,
+              read: (action, params) => (
+                this.read(action, Object.assign({sessionUrl}, params))
+              ),
+              send: (action, params) => (
+                this.send(action, Object.assign({sessionUrl}, params))
+              ),
+              invalidate: (action, params) => (
+                this.invalidate(action, Object.assign({sessionUrl}, params))
+              ),
+            };
+          });
         });
-      });
+
+        // TODO: Replace session expiration with invalidation, see #13.
+        const onExpire = () => {
+          if (this.currentSession === session) {
+            this.currentSession = null;
+          }
+        };
+        session
+          .then(() => new Promise(resolve => setTimeout(resolve, 60000)))
+          .then(onExpire, onExpire);
+        this.currentSession = session;
+      }
+      return this.currentSession;
     }
 
     send(action, params) {
