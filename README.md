@@ -19,6 +19,9 @@ Bookmark each of the following calls on [WrapAPI](https://www.wrapapi.com). Once
 * [disarm](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/disarm/latest)
 * [armstay](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/armstay/latest)
 * [armaway](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/armaway/latest)
+* [locks](https://wrapapi.com/#/view/yungsters/alarmdotcom/locks/latest)
+* [lock](https://wrapapi.com/#/view/yungsters/alarmdotcom/lock/latest)
+* [unlock](https://wrapapi.com/#/view/yungsters/alarmdotcom/unlock/latest)
 
 # Configuration
 
