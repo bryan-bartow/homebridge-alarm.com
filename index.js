@@ -136,15 +136,27 @@ module.exports = homebridge => {
         json: true,
         qs: Object.assign({wrapAPIKey: this.config.apiKey}, params),
         url: `https://wrapapi.com/use/${apiPath}`,
-      }).catch(reason => {
-        this.log(
-          'Error in `%s` (status code %s): %s',
-          apiPath,
-          reason.response.statusCode,
-          reason.error
-        );
-        throw reason.error;
-      });
+      }).then(
+        json => {
+          if (!json.success) {
+            const errorMessage =
+              `Request \`${apiPath}\` was unsuccessful:\n` +
+              json.messages.map(message => ' - ' + message).join('\n');
+            this.log(errorMessage);
+            throw new Error(errorMessage);
+          }
+          return json;
+        },
+        reason => {
+          this.log(
+            'Error in `%s` (status code %s): %s',
+            apiPath,
+            reason.response.statusCode,
+            reason.error
+          );
+          throw reason.error;
+        }
+      );
     }
   }
 
