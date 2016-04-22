@@ -119,7 +119,7 @@ module.exports = homebridge => {
 
     getState() {
       return this.api.login()
-        .then(session => session.send('locks/0.1.0'))
+        .then(session => session.read('locks/0.1.0', null, 5000))
         .then(json => {
           const lock = json.data.locks.find(
             config => config.id === this.config.id
@@ -147,6 +147,7 @@ module.exports = homebridge => {
         return session.send(targetStateConfig.apiVerb, {
           deviceId: this.config.id,
         }).then(() => {
+          session.invalidate('locks/0.1.0');
           this.getService(Service.LockMechanism).setCharacteristic(
             Characteristic.LockCurrentState,
             targetStateConfig.currentState
@@ -192,8 +193,13 @@ module.exports = homebridge => {
   }
 
   class ADCWrapAPI {
+    static createCacheKey(action, params) {
+      return JSON.stringify(action, params || {});
+    }
+
     constructor(log, config) {
       this.log = log;
+      this.cache = new Map();
       this.config = config;
       this.currentSession = null;
     }
@@ -220,8 +226,8 @@ module.exports = homebridge => {
           }).then(currentState => {
             return {
               currentState,
-              read: (action, params) => (
-                this.read(action, Object.assign({sessionUrl}, params))
+              read: (action, params, ttl) => (
+                this.read(action, Object.assign({sessionUrl}, params), ttl)
               ),
               send: (action, params) => (
                 this.send(action, Object.assign({sessionUrl}, params))
@@ -247,6 +253,32 @@ module.exports = homebridge => {
       return this.currentSession;
     }
 
+    /**
+     * If a cached response exists, returns it. Otherwise, sends a request and
+     * caches the response for the supplied `ttl` (milliseconds).
+     */
+    read(action, params, ttl) {
+      const cacheKey = ADCWrapAPI.createCacheKey(action, params);
+      if (!this.cache.has(cacheKey)) {
+        const response = this.send(action, params);
+
+        const onExpire = () => {
+          if (this.cache.get(cacheKey) === response) {
+            this.cache.delete(cacheKey);
+          }
+        };
+        response
+          .then(() => new Promise(resolve => setTimeout(resolve, ttl)))
+          .then(onExpire, onExpire);
+        this.cache.set(cacheKey, response);
+      }
+      return this.cache.get(cacheKey);
+    }
+
+    /**
+     * Sends a request without the use of any cache. This should be used for any
+     * commands that mutate server state.
+     */
     send(action, params) {
       if (!action.match(/^\w+\/\d+\.\d+\.\d+$/)) {
         throw new Error(`Invalid \`action\` supplied: ${action}`);
@@ -277,6 +309,10 @@ module.exports = homebridge => {
           throw reason.error;
         }
       );
+    }
+
+    invalidate(action, params) {
+      this.cache.delete(ADCWrapAPI.createCacheKey(action, params));
     }
   }
 
