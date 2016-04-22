@@ -76,7 +76,11 @@ module.exports = homebridge => {
         .then(session => session.send('locks/0.1.0'))
         .then(json => json.data.locks.map(
           lock => new ADCLockAccessory(this, lock)
-        ));
+        ))
+        .catch(error => {
+          this.log('Error while getting lock devices: %s', error);
+          return [];
+        });
     }
   }
 
