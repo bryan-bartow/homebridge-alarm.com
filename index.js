@@ -73,7 +73,7 @@ module.exports = homebridge => {
 
     getLockAccessories() {
       return this.api.login()
-        .then(session => session.send('locks/0.1.0'))
+        .then(session => session.send('locks/0.1.1'))
         .then(json => json.data.locks.map(
           lock => new ADCLockAccessory(this, lock)
         ))
@@ -123,7 +123,7 @@ module.exports = homebridge => {
 
     getState() {
       return this.api.login()
-        .then(session => session.read('locks/0.1.0', null, 5000))
+        .then(session => session.read('locks/0.1.1', null, 5000))
         .then(json => {
           const lock = json.data.locks.find(
             config => config.id === this.config.id
@@ -151,7 +151,7 @@ module.exports = homebridge => {
         return session.send(targetStateConfig.apiVerb, {
           deviceId: this.config.id,
         }).then(() => {
-          session.invalidate('locks/0.1.0');
+          session.invalidate('locks/0.1.1');
           this.getService(Service.LockMechanism).setCharacteristic(
             Characteristic.LockCurrentState,
             targetStateConfig.currentState
