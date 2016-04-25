@@ -24,12 +24,12 @@ module.exports = homebridge => {
 
   const TargetSecuritySystemStateConfig = {
     [Characteristic.SecuritySystemTargetState.STAY_ARM]: {
-      apiVerb: 'armstay/0.0.3',
+      apiVerb: 'armstay/0.1.0',
       currentState: Characteristic.SecuritySystemCurrentState.STAY_ARM,
       name: 'Armed Stay',
     },
     [Characteristic.SecuritySystemTargetState.AWAY_ARM]: {
-      apiVerb: 'armaway/0.0.3',
+      apiVerb: 'armaway/0.1.0',
       currentState: Characteristic.SecuritySystemCurrentState.AWAY_ARM,
       name: 'Armed Away',
     },
@@ -39,7 +39,7 @@ module.exports = homebridge => {
       name: 'Armed Night',
     },
     [Characteristic.SecuritySystemTargetState.DISARM]: {
-      apiVerb: 'disarm/0.0.3',
+      apiVerb: 'disarm/0.1.0',
       currentState: Characteristic.SecuritySystemCurrentState.DISARMED,
       name: 'Disarmed',
     },
@@ -212,7 +212,7 @@ module.exports = homebridge => {
       if (!this.currentSession) {
         const session = this.send('initlogin/0.0.3').then(json => {
           const sessionUrl = json.data.sessionUrl;
-          return this.send('login/0.0.3', {
+          return this.send('login/0.1.0', {
             sessionUrl,
             username: this.config.username,
             password: this.config.password,
