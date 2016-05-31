@@ -9,6 +9,19 @@ module.exports = homebridge => {
   const Service = homebridge.hap.Service;
   const UUIDGen = homebridge.hap.uuid;
 
+  const TargetLightbulbOn = {
+    [true]: {
+      apiVerb: 'lighton/0.1.0',
+      currentState: true,
+      name: 'On',
+    },
+    [false]: {
+      apiVerb: 'lightoff/0.1.2',
+      currentState: false,
+      name: 'Off',
+    },
+  };
+
   const TargetLockStateConfig = {
     [Characteristic.LockTargetState.UNSECURED]: {
       apiVerb: 'unlock/0.1.0',
@@ -33,11 +46,11 @@ module.exports = homebridge => {
       currentState: Characteristic.SecuritySystemCurrentState.AWAY_ARM,
       name: 'Armed Away',
     },
-    [Characteristic.SecuritySystemTargetState.NIGHT_ARM]: {
-      apiVerb: '', // TODO: Create a WrapAPI verb for this.
-      currentState: Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
-      name: 'Armed Night',
-    },
+    [Characteristic.SecuritySystemTargetState.NIGHT_ARM]: { 
+      apiVerb: 'armstay/0.1.0',
+      currentState: Characteristic.SecuritySystemCurrentState.NIGHT_ARM, 
+      name: 'Armed Night', 
+    }, 
     [Characteristic.SecuritySystemTargetState.DISARM]: {
       apiVerb: 'disarm/0.1.0',
       currentState: Characteristic.SecuritySystemCurrentState.DISARMED,
@@ -55,6 +68,7 @@ module.exports = homebridge => {
     accessories(callback) {
       Promise.all([
         this.getSecuritySystemAccessories(),
+        this.getLightAccessories(),
         this.getLockAccessories(),
       ]).then(
         results => {
@@ -82,6 +96,20 @@ module.exports = homebridge => {
           return [];
         });
     }
+
+    getLightAccessories() {
+      return this.api.login()
+        .then(session => session.send('lights/0.1.1'))
+        .then(json => json.data.lights.map(
+          light => new ADCLightAccessory(this, light)
+        ))
+        .catch(error => {
+          this.log('Error while getting light devices: %s', error);
+          return [];
+        });
+    }
+
+
   }
 
   class ADCAccessory extends Accessory {
@@ -100,6 +128,50 @@ module.exports = homebridge => {
 
     getServices() {
       return this.services;
+    }
+  }
+
+  class ADCLightAccessory extends ADCAccessory {
+    constructor(platform, config) {
+      super(platform, config.name, `light.${config.id}`);
+
+      this.config = config;
+
+      this.addService(new Service.Lightbulb(config.name));
+
+     this.getService(Service.Lightbulb)
+        .getCharacteristic(Characteristic.On)
+        .on('get', callback => nodeify(this.getState(), callback));
+
+      this.getService(Service.Lightbulb)
+        .getCharacteristic(Characteristic.On)
+       .on('set', (state, callback) => nodeify(this.setState(state), callback));
+
+    }
+
+    getState() {
+        this.log(`Getting device ${this.config.name},${this.config.id}`);
+      return this.api.login()
+        .then(session => session.read('lights/0.1.1', null, 5000));
+    }
+
+
+    setState(targetState) {
+      return this.api.login().then(session => {
+        const lightStateConfig = TargetLightbulbOn[targetState];
+
+	if ( this.config.currentState != targetState ) {
+        this.log(`Setting device ${this.config.name},${this.config.id} to \`${targetState}\``);
+        return session.send(lightStateConfig.apiVerb, {
+          device_id: this.config.id,
+        }).then(() => {
+          session.invalidate('lights/0.1.1');
+	this.config.currentState = targetState;
+          this.getService(Service.Lightbulb).setCharacteristic(
+            Characteristic.On, targetState
+          );
+        }); }
+      });
     }
   }
 
