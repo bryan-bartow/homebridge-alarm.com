@@ -22,6 +22,9 @@ Bookmark each of the following calls on [WrapAPI](https://www.wrapapi.com). Once
 * [locks](https://wrapapi.com/#/view/yungsters/alarmdotcom/locks/latest)
 * [lock](https://wrapapi.com/#/view/yungsters/alarmdotcom/lock/latest)
 * [unlock](https://wrapapi.com/#/view/yungsters/alarmdotcom/unlock/latest)
+* [lights](https://wrapapi.com/#/view/rcaslis/alarmdotcom/lights/latest)
+* [lighton](https://wrapapi.com/#/view/rcaslis/alarmdotcom/lighton/latest)
+* [lightoff](https://wrapapi.com/#/view/rcaslis/alarmdotcom/lightoff/latest)
 
 # Configuration
 
