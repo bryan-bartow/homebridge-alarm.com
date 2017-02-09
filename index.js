@@ -284,7 +284,7 @@ module.exports = homebridge => {
       if (!this.currentSession) {
         const session = this.send('initlogin/0.0.3').then(json => {
           const sessionUrl = json.data.sessionUrl;
-          return this.send('login/0.1.0', {
+          return this.send('login/0.1.1', {
             sessionUrl,
             username: this.config.username,
             password: this.config.password,
