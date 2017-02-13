@@ -299,6 +299,7 @@ module.exports = homebridge => {
 							viewState: viewState,
 							viewStateGenerator: viewStateGenerator,
 							eventValidation: eventValidation,
+						});
           }).then(json => {
             switch (json.data.alarmState) {
               case 'Disarmed':
