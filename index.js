@@ -298,7 +298,7 @@ module.exports = homebridge => {
             	password: this.config.password,
 							viewState: viewState,
 							viewStateGenerator: viewStateGenerator,
-							eventValidation: eventValidation
+							eventValidation: eventValidation,
           }).then(json => {
             switch (json.data.alarmState) {
               case 'Disarmed':
