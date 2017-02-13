@@ -282,12 +282,23 @@ module.exports = homebridge => {
 
     login() {
       if (!this.currentSession) {
-        const session = this.send('initlogin/0.0.3').then(json => {
+        const session = this.send('initlogin/0.0.4').then(json => {
           const sessionUrl = json.data.sessionUrl;
-          return this.send('login/0.1.1', {
+          return this.send('getviewstate/0.1.2', {
             sessionUrl,
             username: this.config.username,
             password: this.config.password,
+          }).then(json => {
+						var viewState = json.data.viewState;
+						var viewStateGenerator = json.data.viewStateGenerator
+						var eventValidation = json.data.eventValidation;
+						return this.send('login/0.1.2', {
+            	sessionUrl,
+            	username: this.config.username,
+            	password: this.config.password,
+							viewState: viewState,
+							viewStateGenerator: viewStateGenerator,
+							eventValidation: eventValidation
           }).then(json => {
             switch (json.data.alarmState) {
               case 'Disarmed':
