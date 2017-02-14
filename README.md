@@ -16,6 +16,7 @@ Bookmark each of the following calls on [WrapAPI](https://www.wrapapi.com). Once
 
 * [initlogin](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/initlogin/latest)
 * [login](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/login/latest)
+* [getviewstate](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/getviewstate/latest)
 * [disarm](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/disarm/latest)
 * [armstay](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/armstay/latest)
 * [armaway](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/armaway/latest)
