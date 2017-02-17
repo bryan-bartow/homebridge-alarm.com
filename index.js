@@ -63,13 +63,14 @@ module.exports = homebridge => {
        this.api = new ADCWrapAPI(log, config);
        this.log = log;
        this.name = config.name;
+	this.config = config;
      }
 
     accessories(callback) {
       var accessoryPromises = [];
-			if(config.accessories.usePanel === true) { accessoryPromises.push(this.getSecuritySystemAccessories()) }
-			if(config.accessories.useLights === true) { accessoryPromises.push(this.getLightAccessories()) }
-			if(config.accessories.useLocks === true) { accessoryPromises.push(this.getLockAccessories()) }
+			if(this.config.accessories.usePanel === true) { accessoryPromises.push(this.getSecuritySystemAccessories()) }
+			if(this.config.accessories.useLights === true) { accessoryPromises.push(this.getLightAccessories()) }
+			if(this.config.accessories.useLocks === true) { accessoryPromises.push(this.getLockAccessories()) }
 			
 			Promise.all(accessoryPromises).then(
         results => {
