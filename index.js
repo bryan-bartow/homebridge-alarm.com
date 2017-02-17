@@ -66,11 +66,12 @@ module.exports = homebridge => {
      }
 
     accessories(callback) {
-      Promise.all([
-        this.getSecuritySystemAccessories(),
-        this.getLightAccessories(),
-        this.getLockAccessories(),
-      ]).then(
+      var accessoryPromises = [];
+			if(config.accessories.usePanel === true) { accessoryPromises.push(this.getSecuritySystemAccessories()) }
+			if(config.accessories.useLights === true) { accessoryPromises.push(this.getLightAccessories()) }
+			if(config.accessories.useLocks === true) { accessoryPromises.push(this.getLockAccessories()) }
+			
+			Promise.all(accessoryPromises).then(
         results => {
           callback(Array.prototype.concat.apply([], results));
         },
