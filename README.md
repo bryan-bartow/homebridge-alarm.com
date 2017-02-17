@@ -40,7 +40,12 @@ Configuration sample:
         "username": "test@example.com",
         "password": "testpassword",
         "apiKey": "wrapapikeygoeshere",
-        "apiUsername": "wrapapiusername"
+        "apiUsername": "wrapapiusername",
+        "devices": {
+          "panel": true,
+          "lights": false,
+          "locks": true
+        }
     }
   ]
 }
@@ -54,6 +59,7 @@ Fields:
 * "password": Alarm.com login password, same as app (required)
 * "apiKey": [WrapAPI.com](http://www.wrapapi.com) Server API key for the alarmdotcom API (required)
 * "apiUsername": [WrapAPI.com](http://www.wrapapi.com) username
+* "devices": Object containing a key for each supported accessory device type, whose Boolean value determines whether or not the plugin will (attempt to) use the accessory
 
 # Alarm.com Nag Screens
 
