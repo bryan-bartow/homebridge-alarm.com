@@ -67,12 +67,12 @@ module.exports = homebridge => {
      }
 
     accessories(callback) {
-      var devicePromises = [];
-			if(this.config.devices.panel === true) { devicePromises.push(this.getSecuritySystemAccessories()) }
-			if(this.config.devices.lights === true) { devicePromises.push(this.getLightAccessories()) }
-			if(this.config.devices.locks === true) { devicePromises.push(this.getLockAccessories()) }
+      var accessoryPromises = [];
+			if(this.config.accessories.panel === true) { accessoryPromises.push(this.getSecuritySystemAccessories()) }
+			if(this.config.accessories.lights === true) { accessoryPromises.push(this.getLightAccessories()) }
+			if(this.config.accessories.locks === true) { accessoryPromises.push(this.getLockAccessories()) }
 			
-			Promise.all(devicePromises).then(
+			Promise.all(accessoryPromises).then(
         results => {
           callback(Array.prototype.concat.apply([], results));
         },
