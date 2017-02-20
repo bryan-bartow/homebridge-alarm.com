@@ -301,7 +301,7 @@ module.exports = homebridge => {
 						var viewState = json.data.viewState;
 						var viewStateGenerator = json.data.viewStateGenerator
 						var eventValidation = json.data.eventValidation;
-						return this.send('login/0.1.2', {
+						return this.send('login/0.1.3', {
 							sessionUrl,
 							username: this.config.username,
 							password: this.config.password,
