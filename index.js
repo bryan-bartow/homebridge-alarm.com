@@ -340,8 +340,6 @@ module.exports = homebridge => {
 							),
 						};
 					});
-				}, function(error) {
-					this.log(error);
 				});
 
 				// TODO: Replace session expiration with invalidation, see #13.
@@ -397,6 +395,7 @@ module.exports = homebridge => {
 				url: `https://wrapapi.com/use/${apiPath}`,
 			}).then(
 				json => {
+					this.log(json);
 					if (!json.success) {
 						const errorMessage =
 							`Request \`${apiPath}\` was unsuccessful:\n` +
