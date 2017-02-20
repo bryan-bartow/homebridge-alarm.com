@@ -404,6 +404,13 @@ module.exports = homebridge => {
 						this.log(errorMessage);
 						throw new Error(errorMessage);
 					}
+					
+					if (json.success && 
+						action.indexOf('login') != -1 &&
+						json.outputScenario === 'Expired Session') {
+							this.log("Unable to login to alarm.com");
+					}
+					
 					return json;
 				},
 				reason => {
