@@ -383,7 +383,6 @@ module.exports = homebridge => {
 		 * commands that mutate server state.
 		 */
 		send(action, params) {
-			this.log(action);
 			if (!action.match(/^\w+\/\d+\.\d+\.\d+$/)) {
 				throw new Error(`Invalid \`action\` supplied: ${action}`);
 			}
@@ -396,7 +395,6 @@ module.exports = homebridge => {
 				url: `https://wrapapi.com/use/${apiPath}`,
 			}).then(
 				json => {
-					this.log(json);
 					if (!json.success) {
 						const errorMessage =
 							`Request \`${apiPath}\` was unsuccessful:\n` +
