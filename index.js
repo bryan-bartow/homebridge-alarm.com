@@ -406,7 +406,7 @@ module.exports = homebridge => {
 					if (json.success && 
 						action.indexOf('login') != -1 &&
 						json.outputScenario === 'Login Failure') {
-							this.log(json.data.errorMessage);
+							this.log('alarm.com - ' + json.data.errorMessage);
 					}
 					
 					return json;
