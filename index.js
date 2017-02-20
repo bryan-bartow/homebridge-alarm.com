@@ -383,6 +383,7 @@ module.exports = homebridge => {
 		 * commands that mutate server state.
 		 */
 		send(action, params) {
+			this.log(action);
 			if (!action.match(/^\w+\/\d+\.\d+\.\d+$/)) {
 				throw new Error(`Invalid \`action\` supplied: ${action}`);
 			}
