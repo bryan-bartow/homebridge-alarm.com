@@ -2,6 +2,8 @@
 
 Alarm.com plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
+![](https://jdshkolnik.visualstudio.com/_apis/public/build/definitions/bf233995-8849-49c8-9c7a-7782303e0170/3/badge)
+
 # Installation
 
 1. Install homebridge using: `npm install -g homebridge`
@@ -12,7 +14,7 @@ Alarm.com plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
 # WrapAPI Calls
 
-Bookmark each of the following calls on [WrapAPI](https://www.wrapapi.com). Once you do this and generate a server API key you can call the API
+Bookmark each of the following calls on [WrapAPI](https://www.wrapapi.com). Once you do this and generate a server API key you can use to call the API.
 
 * [initlogin](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/initlogin/latest)
 * [login](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/login/latest)
@@ -63,4 +65,4 @@ Fields:
 
 # Alarm.com Nag Screens
 
-Occassionally, after logging into alarm.com, users will be shown a variety of screens asking them to confirm email addresses, etc. before they are shown their system status screen. The plugin depends on the status screen being shown immediately after login. If you're getting errors, the first thing you should try is manually logging into alarm.com on your browser and dismiss / handle any tasks you're presented before the status page. The plugin will most likely work once this is finished.
+Occasionally, after logging into alarm.com, users will be shown a variety of screens asking them to confirm email addresses, etc. before they are shown their system status screen. The plugin depends on the status screen being shown immediately after login. If you're getting errors, the first thing you should try is manually logging into alarm.com on your browser and dismiss / handle any tasks you're presented before the status page. The plugin will most likely work once this is finished.
