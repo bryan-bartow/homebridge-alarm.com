@@ -16,18 +16,18 @@ Alarm.com plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
 Bookmark each of the following calls on [WrapAPI](https://www.wrapapi.com). Once you do this and generate a server API key you can use to call the API.
 
-* [initlogin](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/initlogin/latest)
-* [login](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/login/latest)
-* [getviewstate](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/getviewstate/latest)
-* [disarm](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/disarm/latest)
-* [armstay](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/armstay/latest)
-* [armaway](https://wrapapi.com/#/view/bryanbartow/alarmdotcom/armaway/latest)
-* [locks](https://wrapapi.com/#/view/andrewmattie/alarmdotcom/locks/latest)
-* [lock](https://wrapapi.com/#/view/yungsters/alarmdotcom/lock/latest)
-* [unlock](https://wrapapi.com/#/view/yungsters/alarmdotcom/unlock/latest)
-* [lights](https://wrapapi.com/#/view/rcaslis/alarmdotcom/lights/latest)
-* [lighton](https://wrapapi.com/#/view/rcaslis/alarmdotcom/lighton/latest)
-* [lightoff](https://wrapapi.com/#/view/rcaslis/alarmdotcom/lightoff/latest)
+* [initlogin](https://wrapapi.com/api/bryanbartow/alarmdotcom/initlogin/latest)
+* [login](https://wrapapi.com/api/bryanbartow/alarmdotcom/login/latest)
+* [getviewstate](https://wrapapi.com/api/bryanbartow/alarmdotcom/getviewstate/latest)
+* [disarm](https://wrapapi.com/api/bryanbartow/alarmdotcom/disarm/latest)
+* [armstay](https://wrapapi.com/api/bryanbartow/alarmdotcom/armstay/latest)
+* [armaway](https://wrapapi.com/api/bryanbartow/alarmdotcom/armaway/latest)
+* [locks](https://wrapapi.com/api/andrewmattie/alarmdotcom/locks/latest)
+* [lock](https://wrapapi.com/api/yungsters/alarmdotcom/lock/latest)
+* [unlock](https://wrapapi.com/api/yungsters/alarmdotcom/unlock/latest)
+* [lights](https://wrapapi.com/api/rcaslis/alarmdotcom/lights/latest)
+* [lighton](https://wrapapi.com/api/rcaslis/alarmdotcom/lighton/latest)
+* [lightoff](https://wrapapi.com/api/rcaslis/alarmdotcom/lightoff/latest)
 
 # Configuration
 
