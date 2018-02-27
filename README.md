@@ -37,17 +37,17 @@ sample-config.json:
 {
   "platforms": [
     {
-        "platform": "Alarmdotcom",
-        "name": "Security Panel",
-        "username": "test@example.com",
-        "password": "testpassword",
-        "apiKey": "wrapapikeygoeshere",
-        "apiUsername": "wrapapiusername",
-        "accessories": {
-          "panel": true,
-          "lights": false,
-          "locks": true
-        }
+      "platform": "Alarmdotcom",
+      "name": "Security Panel",
+      "username": "test@example.com",
+      "password": "testpassword",
+      "apiKey": "wrapapikeygoeshere",
+      "apiUsername": "wrapapiusername",
+      "accessories": {
+        "panel": true,
+        "lights": false,
+        "locks": true
+      }
     }
   ]
 }

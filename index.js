@@ -11,12 +11,12 @@ module.exports = homebridge => {
 
 	const TargetLightbulbOn = {
 		[true]: {
-			apiVerb: 'lighton/0.1.0',
+			apiVerb: 'lighton/latest',
 			currentState: true,
 			name: 'On',
 		},
 		[false]: {
-			apiVerb: 'lightoff/0.1.2',
+			apiVerb: 'lightoff/latest',
 			currentState: false,
 			name: 'Off',
 		},
@@ -24,12 +24,12 @@ module.exports = homebridge => {
 
 	const TargetLockStateConfig = {
 		[Characteristic.LockTargetState.UNSECURED]: {
-			apiVerb: 'unlock/0.1.0',
+			apiVerb: 'unlock/latest',
 			currentState: Characteristic.LockCurrentState.UNSECURED,
 			name: 'Unlocked',
 		},
 		[Characteristic.LockTargetState.SECURED]: {
-			apiVerb: 'lock/0.1.0',
+			apiVerb: 'lock/latest',
 			currentState: Characteristic.LockCurrentState.SECURED,
 			name: 'Locked',
 		},
@@ -37,22 +37,22 @@ module.exports = homebridge => {
 
 	const TargetSecuritySystemStateConfig = {
 		[Characteristic.SecuritySystemTargetState.STAY_ARM]: {
-			apiVerb: 'armstay/0.1.0',
+			apiVerb: 'armstay/latest',
 			currentState: Characteristic.SecuritySystemCurrentState.STAY_ARM,
 			name: 'Armed Stay',
 		},
 		[Characteristic.SecuritySystemTargetState.AWAY_ARM]: {
-			apiVerb: 'armaway/0.1.0',
+			apiVerb: 'armaway/latest',
 			currentState: Characteristic.SecuritySystemCurrentState.AWAY_ARM,
 			name: 'Armed Away',
 		},
 		[Characteristic.SecuritySystemTargetState.NIGHT_ARM]: {
-			apiVerb: 'armstay/0.1.0',
+			apiVerb: 'armstay/latest',
 			currentState: Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
 			name: 'Armed Night',
 		},
 		[Characteristic.SecuritySystemTargetState.DISARM]: {
-			apiVerb: 'disarm/0.1.0',
+			apiVerb: 'disarm/latest',
 			currentState: Characteristic.SecuritySystemCurrentState.DISARMED,
 			name: 'Disarmed',
 		},
@@ -95,7 +95,7 @@ module.exports = homebridge => {
 
 		getLockAccessories() {
 			return this.api.login()
-				.then(session => session.send('locks/0.1.1'))
+				.then(session => session.send('locks/latest'))
 				.then(json => json.data.locks.map(
 					lock => new ADCLockAccessory(this, lock)
 				))
@@ -107,7 +107,7 @@ module.exports = homebridge => {
 
 		getLightAccessories() {
 			return this.api.login()
-				.then(session => session.send('lights/0.1.1'))
+				.then(session => session.send('lights/latest'))
 				.then(json => json.data.lights.map(
 					light => new ADCLightAccessory(this, light)
 				))
@@ -116,8 +116,6 @@ module.exports = homebridge => {
 					return [];
 				});
 		}
-
-
 	}
 
 	class ADCAccessory extends Accessory {
@@ -154,15 +152,13 @@ module.exports = homebridge => {
 			this.getService(Service.Lightbulb)
 				.getCharacteristic(Characteristic.On)
 				.on('set', (state, callback) => nodeify(this.setState(state), callback));
-
 		}
 
 		getState() {
 			this.log(`Getting device ${this.config.name},${this.config.id}`);
 			return this.api.login()
-				.then(session => session.read('lights/0.1.1', null, 5000));
+				.then(session => session.read('lights/latest', null, 5000));
 		}
-
 
 		setState(targetState) {
 			return this.api.login().then(session => {
@@ -173,7 +169,7 @@ module.exports = homebridge => {
 					return session.send(lightStateConfig.apiVerb, {
 						device_id: this.config.id,
 					}).then(() => {
-						session.invalidate('lights/0.1.1');
+						session.invalidate('lights/latest');
 						this.config.currentState = targetState;
 						this.getService(Service.Lightbulb).setCharacteristic(
 							Characteristic.On, targetState
@@ -204,24 +200,24 @@ module.exports = homebridge => {
 
 		getState() {
 			return this.api.login()
-				.then(session => session.read('locks/0.1.1', null, 5000))
-				.then(json => {
-					const lock = json.data.locks.find(
-						config => config.id === this.config.id
-					);
-					if (!lock) {
-						// TODO: Update Homebridge state as unreachable.
-						throw Characteristic.LockCurrentState.UNKNOWN;
-					}
-					switch (lock.status) {
-						case 'Locked':
-							return Characteristic.LockCurrentState.SECURED;
-						case 'Unlocked':
-							return Characteristic.LockCurrentState.UNSECURED;
-						default:
-							return Characteristic.LockCurrentState.UNKNOWN;
-					}
-				});
+			.then(session => session.read('locks/latest', null, 5000))
+			.then(json => {
+				const lock = json.data.locks.find(
+					config => config.id === this.config.id
+				);
+				if (!lock) {
+					// TODO: Update Homebridge state as unreachable.
+					throw Characteristic.LockCurrentState.UNKNOWN;
+				}
+				switch (lock.status) {
+					case 'Locked':
+						return Characteristic.LockCurrentState.SECURED;
+					case 'Unlocked':
+						return Characteristic.LockCurrentState.UNSECURED;
+					default:
+						return Characteristic.LockCurrentState.UNKNOWN;
+				}
+			});
 		}
 
 		setState(targetState) {
@@ -232,7 +228,7 @@ module.exports = homebridge => {
 				return session.send(targetStateConfig.apiVerb, {
 					deviceId: this.config.id,
 				}).then(() => {
-					session.invalidate('locks/0.1.1');
+					session.invalidate('locks/latest');
 					this.getService(Service.LockMechanism).setCharacteristic(
 						Characteristic.LockCurrentState,
 						targetStateConfig.currentState
@@ -291,9 +287,9 @@ module.exports = homebridge => {
 
 		login() {
 			if (!this.currentSession) {
-				const session = this.send('initlogin/0.0.4').then(json => {
+				const session = this.send('initlogin/latest').then(json => {
 					const sessionUrl = json.data.sessionUrl;
-					return this.send('getviewstate/0.1.2', {
+					return this.send('getviewstate/latest', {
 						sessionUrl,
 						username: this.config.username,
 						password: this.config.password,
@@ -301,7 +297,7 @@ module.exports = homebridge => {
 						var viewState = json.data.viewState;
 						var viewStateGenerator = json.data.viewStateGenerator
 						var eventValidation = json.data.eventValidation;
-						return this.send('login/0.1.3', {
+						return this.send('login/latest', {
 							sessionUrl,
 							username: this.config.username,
 							password: this.config.password,
