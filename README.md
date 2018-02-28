@@ -17,7 +17,7 @@ Alarm.com plugin for [Homebridge](https://github.com/nfarina/homebridge)
 Bookmark each of the following calls on [WrapAPI](https://www.wrapapi.com). Once you do this and generate a server API key you can use to call the API.
 
 * [initlogin](https://wrapapi.com/api/bryanbartow/alarmdotcom/initlogin/latest)
-* [login](https://wrapapi.com/api/bryanbartow/alarmdotcom/login/latest)
+* [login](https://wrapapi.com/api/jdshkolnik/alarmdotcom/login/latest)
 * [getviewstate](https://wrapapi.com/api/bryanbartow/alarmdotcom/getviewstate/latest)
 * [disarm](https://wrapapi.com/api/bryanbartow/alarmdotcom/disarm/latest)
 * [armstay](https://wrapapi.com/api/bryanbartow/alarmdotcom/armstay/latest)
