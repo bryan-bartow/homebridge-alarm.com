@@ -379,7 +379,7 @@ module.exports = homebridge => {
 		 * commands that mutate server state.
 		 */
 		send(action, params) {
-			if (!action.match(/^\w+\/\d+\.\d+\.\d+$/)) {
+			if (!action.match(/^\w+\/(latest|\d+\.\d+\.\d+$)/)) {
 				throw new Error(`Invalid \`action\` supplied: ${action}`);
 			}
 			const apiPath = `${this.config.apiUsername}/alarmdotcom/${action}`;
